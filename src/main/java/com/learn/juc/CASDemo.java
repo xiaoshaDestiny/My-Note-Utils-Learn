@@ -1,4 +1,4 @@
-package com.learn.jvm;
+package com.learn.juc;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
