@@ -14,13 +14,12 @@ import java.util.concurrent.atomic.AtomicStampedReference;
  */
 public class ABADemo {
 
-
     static AtomicReference<Integer> atomicReference = new AtomicReference<>(100);
     static AtomicStampedReference<Integer> atomicStampedReference = new AtomicStampedReference<>(100,1);
 
     public static void main(String[] args) {
 
-        System.out.println("===============================ABA问题的产生===============================");
+/*        System.out.println("===============================ABA问题的产生===============================");
 
         new Thread(() -> {
             atomicReference.compareAndSet(100,101);
@@ -35,7 +34,7 @@ public class ABADemo {
 
         },"Thread 2").start();
 
-        try {TimeUnit.SECONDS.sleep(2);} catch (InterruptedException e) { e.printStackTrace();}
+        try {TimeUnit.SECONDS.sleep(2);} catch (InterruptedException e) { e.printStackTrace();}*/
 
 
 
