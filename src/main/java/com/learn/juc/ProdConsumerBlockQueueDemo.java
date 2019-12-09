@@ -9,8 +9,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author xrb
  * @create 2019-12-02 21:50
  */
-
-
 class MyResource{
     private volatile boolean FLAG = true;
     private AtomicInteger atomicInteger = new AtomicInteger(0);
@@ -36,7 +34,7 @@ class MyResource{
             }
             TimeUnit.SECONDS.sleep(1);
         }
-        System.out.println(Thread.currentThread().getName() +"叫停，FLAG = false 生产动作结束");
+        System.out.println(Thread.currentThread().getName() +"\t FLAG = false 生产动作结束");
     }
 
     //消费
@@ -46,10 +44,10 @@ class MyResource{
             result = blockQueue.poll(2L,TimeUnit.SECONDS);
             if(null == result || result.equalsIgnoreCase("")){
                 FLAG = false;
-                System.out.println(Thread.currentThread().getName()+"\t 超过来秒钟没有去到蛋糕，退出");
+                System.out.println(Thread.currentThread().getName()+"\t 超过2秒钟没有可消费的数据退出");
                 return;
             }
-            System.out.println(Thread.currentThread().getName()+"消费队列"+result+"成功");
+            System.out.println(Thread.currentThread().getName()+"\t 消费队列"+result+"成功");
         }
     }
 
@@ -68,7 +66,7 @@ public class ProdConsumerBlockQueueDemo {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        },"Prod").start();
+        },"Provider").start();
 
         new Thread(()->{
             System.out.println(Thread.currentThread().getName()+"\t 消费线程启动");

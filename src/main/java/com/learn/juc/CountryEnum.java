@@ -20,7 +20,6 @@ public enum CountryEnum {
         this.retCode = retCode;
         this.retMessage = retMessage;
     }
-    
 
     public static CountryEnum forEach_CountryEnum(int index){
         CountryEnum[] values = CountryEnum.values();
