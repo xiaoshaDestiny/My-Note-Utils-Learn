@@ -45,7 +45,6 @@ class Phone implements  Runnable{
         }catch (Exception e){ e.printStackTrace(); }finally {
             lock.unlock();
             lock.unlock();
-            lock.unlock();
         }
     }
 
