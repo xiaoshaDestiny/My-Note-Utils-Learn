@@ -8,8 +8,6 @@ import java.util.concurrent.TimeUnit;
 /**
  * @author xrb
  * @create 2019-12-13 11:16
- *
- *
  * Array Arrays[辅助工具类]
  *
  * Java中的线程池是通过Executor框架实现的，该框架中用到了Executor,Executors,ExecutorService,ThreadPoolExecutor这几个类。
