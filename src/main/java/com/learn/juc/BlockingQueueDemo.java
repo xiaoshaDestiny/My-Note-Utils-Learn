@@ -21,8 +21,6 @@ public class BlockingQueueDemo {
 
 
     /*    blockingQueue.put("a");
-
-
         System.out.println(blockingQueue.offer("a"));
         System.out.println(blockingQueue.offer("b"));
         System.out.println(blockingQueue.offer("c"));

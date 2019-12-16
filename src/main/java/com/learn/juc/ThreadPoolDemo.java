@@ -43,6 +43,7 @@ import java.util.concurrent.TimeUnit;
  * 1、创建一个可以缓存的线程池，如果线程池长度超过处理需要，可以里胡哦哦回收空线程，若无可收回，则创建新的线程
  * 2、newCacheThreadPool将corePoolSize设置为0，将maximumPoolSize设置为Integer.MAXVALUE，使用的是SynchronousQueue，也就是说来任务就创建线程运行，当线程空闲超过60秒，就销毁线程
  *
+ * 其余两个创建线程池的方式
  * Executors.newScheduledThreadPool()
  * Executors.newWorkStealingPool(int) java8新特性
  *
@@ -53,22 +54,15 @@ public class ThreadPoolDemo {
     public static void main(String[] args) {
         //查看本子的线程数量
         System.out.println(Runtime.getRuntime().availableProcessors());
-
-        //一池5线程
-        ExecutorService threadPool1 = Executors.newFixedThreadPool(5);
-
-        //一池1线程
-        ExecutorService threadPool2 = Executors.newSingleThreadExecutor();
-
-        //可以扩容 随机的扩容变动线程
-        ExecutorService threadPool = Executors.newCachedThreadPool();
-
+        ExecutorService threadPool1 = Executors.newFixedThreadPool(5);//一池5线程
+        ExecutorService threadPool2 = Executors.newSingleThreadExecutor();//一池1线程
+        ExecutorService threadPool3 = Executors.newCachedThreadPool(); //可以扩容 随机的扩容变动线程
 
 
         //模拟10个用户来办理业务，每个用户就是一个来自外部的请求线程
         try{
             for (int i = 1; i <= 10 ; i++) {
-                threadPool.execute(()->{
+                threadPool3.execute(()->{
                     System.out.println(Thread.currentThread().getName()+"\t 办理业务");
                 });
                 try {TimeUnit.MILLISECONDS.sleep(200);} catch (InterruptedException e) { e.printStackTrace();}
@@ -77,7 +71,7 @@ public class ThreadPoolDemo {
         }catch (Exception e){
             e.printStackTrace();
         }finally {
-            threadPool.shutdown();
+            threadPool3.shutdown();
 
         }
 
