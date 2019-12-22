@@ -72,8 +72,5 @@ public class ThreadPoolDemo {
             threadPool3.shutdown();
 
         }
-
-
-
  }
 }
