@@ -47,6 +47,24 @@ import java.util.concurrent.TimeUnit;
  *
  *
  *
+ * 线程池的七大参数：
+ * 1、corePoolSize：线程池中的常驻核心线程数
+ * 在创建了线程池之后，当有请求任务来了之后，就会安排池中的线程去执行请求任务，近似理解为今日当值线程。
+ * 当线程池中的线程数目达到corePoolSize后，就会把到达的任务放到缓存队列中。
+ * 2、maximumPoolSize : 线程池所能容纳同时执行的最大线程数，必须大于等于1
+ * 3、keepAliveTile：多余的空闲线程的存活时间，当线程池数量超过corePoolSize的时，当空闲时间达到该值得时候，多余空闲线程会被销
+ * 默认情况下，只有当线程池中的线程数大于corePoolSize的时候，keepAliveTime才会起作用，知道线程池中的线程数不大于corePoolSize .
+ * 毁直到只剩下corePoolSize个线程为止。
+ * 4、unit ：keepAliveTime的时间单位
+ *  	在规定的时间单位里面，没有新的任务了，线程没有执行，这些线程就会被销毁，直至数量降低为corePoolSize的数量。
+ * 5、workQueue ： 任务队列，被提交但是还没有被执行的任务。
+ * 6、threadFactory：表示生产线程池中工作线程的线程工厂，用于创建线程一般默认的即可。
+ * 7、handler： 拒绝策略，表示当队列满了并且工作线程大于等于线程池的最大线程数时，如何来拒绝
+ *
+ *
+ * 线程池底层核心原理：
+ *
+ *
  */
 public class ThreadPoolDemo {
     public static void main(String[] args) {
