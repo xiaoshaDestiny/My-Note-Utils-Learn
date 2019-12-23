@@ -75,6 +75,15 @@ import java.util.concurrent.TimeUnit;
  * 所以线程池的所有任务完成后它最终会收缩到corePoolSize的大小。
  *
  *
+ * JDK内置的拒绝策略：
+ * 1、AbortPolicy(莫仍)：直接抛出RejectedException异常阻止系统正常运行
+ * 2、CallerRunsPolicy:“调用者运行”一种调节机制，给策略既不会抛弃任务，也不会抛出异常，而是将某些任务回退带调用者，从而降低新任务的流量。
+ * 3、DiscardOldestPolicy:抛弃队列中等待最久的任务，然后把当前任务加入队列中尝试再次提交当前任务。
+ * 4、DiscardPolicy:直接丢弃任务，不予处理也不抛出异常。如果运行任务失败，这是最好的一种方案。
+ *
+ * JDK内置的拒绝策略均是实现了RejectedExecutionHandler接口。
+ *
+ *
  */
 public class ThreadPoolDemo {
     public static void main(String[] args) {
