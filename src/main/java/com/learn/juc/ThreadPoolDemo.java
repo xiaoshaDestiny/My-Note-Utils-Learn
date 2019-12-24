@@ -1,8 +1,6 @@
 package com.learn.juc;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 /**
  * @author xrb
@@ -99,17 +97,40 @@ import java.util.concurrent.TimeUnit;
  *
  */
 public class ThreadPoolDemo {
+
     public static void main(String[] args) {
+        ExecutorService threadPool =
+                new ThreadPoolExecutor(2,
+                        5,
+                        1L,
+                        TimeUnit.SECONDS,
+                        new LinkedBlockingDeque<>(3),
+                        Executors.defaultThreadFactory(),
+                        new ThreadPoolExecutor.AbortPolicy());
+        try{
+            for (int i = 1; i <= 9 ; i++) {
+                threadPool.execute(()->{
+                    System.out.println(Thread.currentThread().getName()+"\t 办理业务");
+                });
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }finally {
+            threadPool.shutdown();
+        }
+    }
+
+    public static void initThreadPool(){
+
         //查看本子的线程数量
         System.out.println(Runtime.getRuntime().availableProcessors());
         ExecutorService threadPool1 = Executors.newFixedThreadPool(5);//一池5线程
         ExecutorService threadPool2 = Executors.newSingleThreadExecutor();//一池1线程
         ExecutorService threadPool3 = Executors.newCachedThreadPool(); //可以扩容 随机的扩容变动线程
 
-
         //模拟10个用户来办理业务，每个用户就是一个来自外部的请求线程
         try{
-            for (int i = 1; i <= 10 ; i++) {
+            for (int i = 1; i <= 7 ; i++) {
                 threadPool3.execute(()->{
                     System.out.println(Thread.currentThread().getName()+"\t 办理业务");
                 });
@@ -122,5 +143,6 @@ public class ThreadPoolDemo {
             threadPool3.shutdown();
 
         }
- }
+    }
 }
+
