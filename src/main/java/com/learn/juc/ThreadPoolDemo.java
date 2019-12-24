@@ -1,6 +1,5 @@
 package com.learn.juc;
 
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -80,8 +79,22 @@ import java.util.concurrent.TimeUnit;
  * 2、CallerRunsPolicy:“调用者运行”一种调节机制，给策略既不会抛弃任务，也不会抛出异常，而是将某些任务回退带调用者，从而降低新任务的流量。
  * 3、DiscardOldestPolicy:抛弃队列中等待最久的任务，然后把当前任务加入队列中尝试再次提交当前任务。
  * 4、DiscardPolicy:直接丢弃任务，不予处理也不抛出异常。如果运行任务失败，这是最好的一种方案。
- *
  * JDK内置的拒绝策略均是实现了RejectedExecutionHandler接口。
+ *
+ * 工作中单一\固定数目\可变的 三种创建线程池的方式，一般使用哪个？
+ * 一个都不用！
+ *  强制线程池的创建不允许使用Executors去创建，而是通过ThreadPoolExecutior的方式
+ *  Executors创建线程池的弊端：
+ *  1、FixedThreadPool和SingleThreadPool允许的请求队列长度是Integer.MAX_VALUE 会堆积大量请求，导致OOM
+ *  2、CacheThreadPool和ScheduledThreadPool允许创建的线程的数量时Integer.MAX_VALUE,创建大量线程，也会导致OOM
+ *
+ * 线程资源必须通过线程池提供，不允许在应用中自行显示创建线程
+ * 减少在创建和销毁上锁损耗的时间以及系统资源的开销，解决资源不足问题，
+ * 如果不适用线程池，有可能造成系统创建大量同类线程而导致消耗完内存或者“过度切换"问题。
+ *
+ *
+ *
+ *
  *
  *
  */
