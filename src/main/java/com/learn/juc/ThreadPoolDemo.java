@@ -98,6 +98,10 @@ import java.util.concurrent.*;
  */
 public class ThreadPoolDemo {
 
+    /**
+     * 仅仅是学习演示，实际中一定不能出现这样的代码
+     * @param args
+     */
     public static void main(String[] args) {
         ExecutorService threadPool =
                 new ThreadPoolExecutor(2,
@@ -106,7 +110,15 @@ public class ThreadPoolDemo {
                         TimeUnit.SECONDS,
                         new LinkedBlockingDeque<>(3),
                         Executors.defaultThreadFactory(),
-                        new ThreadPoolExecutor.AbortPolicy());
+                       //更换拒绝策略
+                        // 1、抛出异常
+                        //new ThreadPoolExecutor.AbortPolicy());
+                        //2、回退给调用者
+                        //new ThreadPoolExecutor.CallerRunsPolicy());
+                        //3、抛弃等待时间最久的一个
+                        //new ThreadPoolExecutor.DiscardOldestPolicy());
+                        //4、丢弃任务
+                        new ThreadPoolExecutor.DiscardPolicy());
         try{
             for (int i = 1; i <= 9 ; i++) {
                 //超过5+3的时候，会采取拒绝策略
