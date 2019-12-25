@@ -109,6 +109,7 @@ public class ThreadPoolDemo {
                         new ThreadPoolExecutor.AbortPolicy());
         try{
             for (int i = 1; i <= 9 ; i++) {
+                //超过5+3的时候，会采取拒绝策略
                 threadPool.execute(()->{
                     System.out.println(Thread.currentThread().getName()+"\t 办理业务");
                 });
@@ -124,10 +125,12 @@ public class ThreadPoolDemo {
 
         //查看本子的线程数量
         System.out.println(Runtime.getRuntime().availableProcessors());
-        ExecutorService threadPool1 = Executors.newFixedThreadPool(5);//一池5线程
-        ExecutorService threadPool2 = Executors.newSingleThreadExecutor();//一池1线程
-        ExecutorService threadPool3 = Executors.newCachedThreadPool(); //可以扩容 随机的扩容变动线程
-
+        //一池5线程
+        ExecutorService threadPool1 = Executors.newFixedThreadPool(5);
+        //一池1线程
+        ExecutorService threadPool2 = Executors.newSingleThreadExecutor();
+        //可以扩容 随机的扩容变动线程
+        ExecutorService threadPool3 = Executors.newCachedThreadPool();
         //模拟10个用户来办理业务，每个用户就是一个来自外部的请求线程
         try{
             for (int i = 1; i <= 7 ; i++) {
