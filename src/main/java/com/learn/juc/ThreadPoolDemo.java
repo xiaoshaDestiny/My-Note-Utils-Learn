@@ -79,6 +79,7 @@ import java.util.concurrent.*;
  * 4、DiscardPolicy:直接丢弃任务，不予处理也不抛出异常。如果运行任务失败，这是最好的一种方案。
  * JDK内置的拒绝策略均是实现了RejectedExecutionHandler接口。
  *
+ *
  * 工作中单一\固定数目\可变的 三种创建线程池的方式，一般使用哪个？
  * 一个都不用！
  *  强制线程池的创建不允许使用Executors去创建，而是通过ThreadPoolExecutior的方式
@@ -86,14 +87,24 @@ import java.util.concurrent.*;
  *  1、FixedThreadPool和SingleThreadPool允许的请求队列长度是Integer.MAX_VALUE 会堆积大量请求，导致OOM
  *  2、CacheThreadPool和ScheduledThreadPool允许创建的线程的数量时Integer.MAX_VALUE,创建大量线程，也会导致OOM
  *
+ *
  * 线程资源必须通过线程池提供，不允许在应用中自行显示创建线程
  * 减少在创建和销毁上锁损耗的时间以及系统资源的开销，解决资源不足问题，
  * 如果不适用线程池，有可能造成系统创建大量同类线程而导致消耗完内存或者“过度切换"问题。
  *
  *
- *
- *
- *
+ * 如何配置最佳的线程池数量？配置线程池改考虑些什么问题？
+ * 根据业务类型去决定线程数目的最佳数值！
+ * 首先获取运行环境的CPU核心数 Runtime.getRuntime().availableProcessors();
+ * CPU密集型：改任务需要大量运算，没有阻塞，CPU一直在全速运行，
+ *      CPU密集任务只有在真正的多核CPU上才可能通过多线程得到加速，单核的是不可能加速的
+ *      CPU密集型的任务尽可能的少配置线程的数量，一般公式  CPU核心数+1 个线程的线程池
+ * IO密集型：
+ *      分为两种：1、IO密集型的任务线程并不是一直在执行任务，则应该配置尽可能多的线程数量  CPU核心数 * 2
+ *               2、参考公式： CPU核数  /  1-阻塞系数 阻塞系数在0.8~0.9之间
+ *               比如8核CPU 8/1-0.9 = 80
+ *               为什么呢？
+ *               任务需要大量的IO,会导致CPU运算能力的浪费，一直在等待，所以IO密集型任务中使用多线程可以大大加速程序运行，即使是在单核的CPU，也能加速。充分利用等待IO而浪费的时间。
  *
  */
 public class ThreadPoolDemo {
@@ -120,7 +131,7 @@ public class ThreadPoolDemo {
                         //4、丢弃任务
                         new ThreadPoolExecutor.DiscardPolicy());
         try{
-            for (int i = 1; i <= 9 ; i++) {
+            for (int i = 1; i <= 10 ; i++) {
                 //超过5+3的时候，会采取拒绝策略
                 threadPool.execute(()->{
                     System.out.println(Thread.currentThread().getName()+"\t 办理业务");
