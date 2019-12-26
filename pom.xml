@@ -10,6 +10,7 @@
     <version>1.0-SNAPSHOT</version>
     <modules>
         <module>learn-jedis</module>
+        <module>learn-data-tructure</module>
     </modules>
 
     <dependencies>
