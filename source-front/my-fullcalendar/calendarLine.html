@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<meta charset="UTF-8">
+<title>calendar</title>
+<link rel="stylesheet" href="../../static/layui/css/layui.css" media="all">
+<script type="text/javascript" src="../../static/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../static/jquery/jquery.browser.min.js"></script>
+<script type="text/javascript" src="../../static/js/ajax.js"></script>
+<script src="../../static/layui/layui.js" charset="utf-8"></script>
+<script src="../config.js"></script>
+<script src="../../static/handlebars/handlebars-v4.0.12.js"></script>
+
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+<link href='../../static/fullcalendar/fullcalendar.css' rel='stylesheet' />
+<link href='../../static/fullcalendar/fullcalendar.print.css' rel='stylesheet' media='print' />
+<script src='../../static/fullcalendar/lib/jquery-ui.custom.min.js'></script>
+<script src='../../static/fullcalendar/fullcalendar.js'></script>
+<script src='../../static/fullcalendar/gcal.js'></script>
+
+<style>
+	body {
+		margin-top: 40px;
+		text-align: center;
+		font-size: 14px;
+		font-family: "Lucida Grande",Helvetica,Arial,Verdana,sans-serif;
+	}
+	.calendarWrapper {
+		/*width: 1190px;*/
+		margin: 0 auto 15px;
+	}
+	#calendar {
+		width: 700px;
+		background: #fff;
+		padding: 15px 10px;
+	}
+	.calendarWrapper .rightSidePanel {
+		width: 240px;
+		padding: 0px 15px;
+	}
+	.dib{display: inline-block;}
+	.fr{float: left;}
+/*	.product{background: #009688;}
+	.repair{background: #f2f2f2;}*/
+	.product{background: #cff2c0;}
+	.repair{background: #edac87;}
+	.clearColor{background: #ffffff;}
+</style>
+<script>
+    var prodLineName; 	//当前选中的	 生产线名称
+    var lineCd;			//当前选中的	 生产线CD
+    //生产线表格
+    layui.use('table', function(){
+        var table = layui.table;
+        table.render({
+            elem: '#rm-store-prod-line',
+            url: zuulUrl + "/bs/prodLine/getAllList",
+            headers: {"_token": _token},
+            defaultToolbar: false,
+            page: false,
+            limit: 10000,
+            cols: [[
+                {type: 'radio'},
+                {field: 'prodLineName', title: '生产线名称', align: 'center'},
+                {field: 'prodLineCd', title: '生产线CD', align: 'center'},
+                {field: 'productivity', title: '生产线加工能力', align: 'center',hide:'true'},
+                {field: 'unit', title: '计量单位', align: 'center',hide:'true'},
+                {field: 'prodLayoutCd', title: 'prodLayoutCd', align: 'center',hide:'true'}
+            ]],
+            height: 'full-800',
+            parseData: function (res) {
+                res.result[0].LAY_CHECKED = true;
+                lineCd = res.result[0].prodLineCd;
+                prodLineName = res.result[0].prodLineName;
+                return {
+                    "code": 0,
+                    "msg": res.message,
+                    "data": res.result
+                };
+            },
+			done:function () {
+                getWorkScheduleByLineCd(lineCd);
+            }
+        });
+        //行选择  生产线改变  颜色改变
+        table.on('row(rm-store-prod-line)', function(obj){
+            obj.tr.find("input[lay-type='layTableRadio']").prop("checked",true);
+            obj.tr.addClass('layui-table-click').siblings().removeClass('layui-table-click');
+            lineCd = obj.data.prodLineCd;
+            prodLineName = obj.data.prodLineName;
+            getWorkScheduleByLineCd(lineCd);
+        });
+        //单击行选中radio
+        $('body').on('click', '.layui-table-body tr', function (e) {
+            $('.layui-form-radio', this).click();
+        });
+        $('body').on('click', '.layui-form-radio', function (e) {
+            e.stopPropagation();
+        });
+    });
+    //加载数据，渲染日历颜色
+    function getWorkScheduleByLineCd(lineCd) {
+        doAjax(
+            zuulUrl + "/bs/workSchedule/getByLineCd",
+            "GET",
+            {prodLineCd:lineCd},
+            function(res) {
+                //根据状态把颜色弄好
+                //先全部渲染成白色
+                $('.diy-box').addClass("clearColor");
+                for (var i = 0; i < res.length; i++) {
+                    //生产
+                    if(res[i].prodStateCd == "sc"){
+                        var dateStr = "td[data-date='"+res[i].workDate+"']";
+                        $(dateStr).removeClass("clearColor");
+                        $(dateStr).addClass("product");
+                    }
+                    //维修
+                    if(res[i].prodStateCd == "wx"){
+                        var dateStr = "td[data-date='"+res[i].workDate+"']";
+                        $(dateStr).removeClass("clearColor");
+                        $(dateStr).addClass("repair");
+                    }
+                }
+            }
+        );
+    }
+
+    $(function(){
+        loadToday();
+        loadCalendarByLineCd();
+        bandingCheckEvent();
+    });
+    //日历组件 start
+    function loadToday(){
+        var dayDate = new Date();
+        var d = $.fullCalendar.formatDate(dayDate,"dddd");
+        var m = $.fullCalendar.formatDate(dayDate,"yyyy年MM月dd日");
+        var lunarDate = lunar(dayDate);
+        $(".alm_date").html(m + "&nbsp;" + d);
+        $(".today_date").html(dayDate.getDate())
+        $("#alm_cnD").html("农历"+ lunarDate.lMonth + "月" + lunarDate.lDate);
+        $("#alm_cnY").html(lunarDate.gzYear+"年&nbsp;"+lunarDate.gzMonth+"月&nbsp;"+lunarDate.gzDate+"日");
+        $("#alm_cnA").html("【"+lunarDate.animal+"年】");
+        var fes = lunarDate.festival();
+        if(fes.length>0){
+            $(".alm_lunar_date").html($.trim(lunarDate.festival()[0].desc));
+            $(".alm_lunar_date").show();
+        }else{
+            $(".alm_lunar_date").hide();
+        }
+    }
+    function loadCalendarByLineCd(){
+        var date = new Date();
+        var d = date.getDate();
+        var m = date.getMonth();
+        var y = date.getFullYear();
+        var events = [];
+        $("#calendar").fullCalendar({
+            header : {
+                left : 'prevYear,nextYear',
+                center : 'title',
+                right : 'prev,next today'
+            },
+            buttonText: {
+                prev: "<span class='fc-text-arrow'>&lsaquo;上个月</span>",
+                next: "<span class='fc-text-arrow'>下个月&rsaquo;</span>",
+                prevYear: "<span class='fc-text-arrow'>&laquo;上一年</span>",
+                nextYear: "<span class='fc-text-arrow'>下一年&raquo;</span>"
+            },
+            editable : true,
+            locale: 'zh-cn',
+            defaultDate: date,
+            navLinks: true, // can click day/week names to navigate views
+            selectable: true,
+            selectHelper: true,
+            eventLimit: true, // allow "more" link when too many events
+            events: events,
+            select: function (start, end) {
+
+                var titleStr = prodLineName +" "+start.getFullYear()+"年"+start.getMonth()+"月"+start.getDate()+"日" + "-" +end.getFullYear()+"年"+end.getMonth()+"月"+end.getDate()+"日";
+                debugger;
+                layui.use('layer', function () {
+                    $('#rm-store-set-line-state').removeClass('layui-hide');
+                    var layer = layui.layer;
+                    layer.open({
+                        type: 1,
+                        area: ['500px', '300px'],
+                        title: titleStr,
+                        content:  $('#rm-store-set-line-state'),
+                        end: function () {
+                            $('#rm-store-set-line-state').addClass('layui-hide');
+                        }
+                    });
+                });
+            },
+
+            dayClick : function(dayDate, allDay, jsEvent, view) {
+                //点击单元格事件
+                var d = $.fullCalendar.formatDate(dayDate,"dddd");
+                var m = $.fullCalendar.formatDate(dayDate,"yyyy年MM月dd日");
+                var lunarDate = lunar(dayDate);
+                $(".alm_date").html(m + "&nbsp;" + d);
+                $(".today_date").html(dayDate.getDate())
+                $("#alm_cnD").html("农历"+ lunarDate.lMonth + "月" + lunarDate.lDate);
+                $("#alm_cnY").html(lunarDate.gzYear+"年&nbsp;"+lunarDate.gzMonth+"月&nbsp;"+lunarDate.gzDate+"日");
+                $("#alm_cnA").html("【"+lunarDate.animal+"年】");
+                var fes = lunarDate.festival();
+                if(fes.length>0){
+                    $(".alm_lunar_date").html($.trim(lunarDate.festival()[0].desc));
+                    $(".alm_lunar_date").show();
+                }else{
+                    $(".alm_lunar_date").hide();
+                }
+                //当天则显示 当天 标识
+                var now = new Date();
+                if (now.getDate() == dayDate.getDate() && now.getMonth() == dayDate.getMonth() && now.getFullYear() == dayDate.getFullYear()){
+                    $(".today_icon").show();
+                }else{
+                    $(".today_icon").hide();
+                }
+            },
+			//加载完成之后用这个回调方法
+            eventAfterAllRender :function(){
+                getWorkScheduleByLineCd(lineCd);
+			},
+            loading : function(isLoading) {
+                //开始加载
+                if (isLoading){
+                    $("#msgTopTipWrapper").show();
+				} else{
+                    $("#msgTopTipWrapper").fadeOut();
+				}
+            }
+        });
+    }
+    function bandingCheckEvent(){
+        $("#fc-dateSelect").delegate("select","change",function(){
+            var fcsYear = $("#fcs_date_year").val();
+            var fcsMonth = $("#fcs_date_month").val();
+            $("#calendar").fullCalendar('gotoDate', fcsYear, fcsMonth);
+        });
+    }
+    //日历组件 end
+
+</script>
+</head>
+
+<body>
+<div class="layui-fluid">
+	<div class="layui-row">
+		<div class="layui-col-sm4">
+			<div class="grid-demo grid-demo-bg1">
+				<table class="layui-table" id="rm-store-prod-line" lay-filter="rm-store-prod-line"></table>
+				<div class="calendarWrapper">
+					<div class="rightSidePanel mb50 fr">
+						<div id="div_day_detail" class="h_calendar_alm">
+							<div class="alm_date"></div>
+							<div class="alm_content nofestival">
+								<div class="today_icon"></div>
+								<div class="today_date"></div>
+								<p id="alm_cnD"></p>
+								<p id="alm_cnY"></p>
+								<p id="alm_cnA"></p>
+								<div class="alm_lunar_date"></div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="layui-col-sm8">
+			<div class="grid-demo">
+				<div id="calendar" class="dib"></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!--弹出层隐藏-->
+<div id="rm-store-set-line-state" class="layui-hide">
+	<button type="button" class="layui-btn layui-btn-lg layui-btn-normal ">正常排产</button>
+	<button type="button" class="layui-btn layui-btn-lg layui-btn-normal">设备检修</button>
+</div>
+
+
+</body>
+</html>
