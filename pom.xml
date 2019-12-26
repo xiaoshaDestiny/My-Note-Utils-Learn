@@ -5,8 +5,12 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>groupId</groupId>
-    <artifactId>learn-jvm</artifactId>
+    <artifactId>my-learn</artifactId>
+    <packaging>pom</packaging>
     <version>1.0-SNAPSHOT</version>
+    <modules>
+        <module>learn-jedis</module>
+    </modules>
 
     <dependencies>
         <dependency>
