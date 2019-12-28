@@ -117,13 +117,6 @@ $('body').on('click', '.layui-table-body tr', function (e) {
 $('body').on('click', '.layui-form-radio', function (e) {
     e.stopPropagation();
 });
-table.on('row(pass-way)', function(obj){   //这里row()里面是layui 表格table的filter名称  需要修改
-    //加上这两行，选择行也能选中redio
-    obj.tr.find("input[lay-type='layTableRadio']").prop("checked",true);
-    obj.tr.addClass('layui-table-click').siblings().removeClass('layui-table-click');
-});
-
-
 
 
 //8、

@@ -1,4 +1,4 @@
-package com.learn.mySource;
+package com.learn.source;
 
 import java.util.Calendar;
 
