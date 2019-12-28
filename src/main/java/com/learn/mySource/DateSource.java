@@ -18,7 +18,7 @@ public class DateSource {
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.DATE, 1);
         calendar.set(Calendar.YEAR, Integer.parseInt( yearMonth.substring(0,4)));
-        calendar.set(Calendar.MONTH, Integer.parseInt(yearMonth.substring(5,6)) - 1);
+        calendar.set(Calendar.MONTH, Integer.parseInt(yearMonth.substring(4,6)) - 1);
         return calendar.getActualMaximum(Calendar.DATE);
     }
 
