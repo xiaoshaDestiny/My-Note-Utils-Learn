@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<meta charset="UTF-8">
+<title>calendar</title>
+<link rel="stylesheet" href="../../static/layui/css/layui.css" media="all">
+<script type="text/javascript" src="../../static/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../static/jquery/jquery.browser.min.js"></script>
+<script type="text/javascript" src="../../static/js/ajax.js"></script>
+<script src="../../static/layui/layui.js" charset="utf-8"></script>
+<script src="../config.js"></script>
+<script src="../../static/handlebars/handlebars-v4.0.12.js"></script>
+
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+<link href='../../static/fullcalendar/fullcalendar.css' rel='stylesheet' />
+<link href='../../static/fullcalendar/fullcalendar.print.css' rel='stylesheet' media='print' />
+<script src='../../static/fullcalendar/lib/jquery-ui.custom.min.js'></script>
+<script src='../../static/fullcalendar/fullcalendar.js'></script>
+<script src='../../static/fullcalendar/gcal.js'></script>
+
+<style>
+	body {
+		margin-top: 40px;
+		text-align: center;
+		font-size: 14px;
+		font-family: "Lucida Grande",Helvetica,Arial,Verdana,sans-serif;
+	}
+	.calendarWrapper {
+		width: 100%;
+	}
+	#calendar {
+		width: 700px;
+		background: #fff;
+		padding: 15px 10px;
+	}
+	.calendarWrapper .rightSidePanel {
+		width: 100%;
+	}
+	.dib{display: inline-block;}
+	.fr{float: left;}
+	.show-block{
+		margin-top: 20px;
+		margin-bottom: 10px;
+		display: inline-block;
+		height: 25px;
+		line-height: 30px;
+		padding: 0 25px;
+		text-align: center;
+		font-size: 16px;
+		color: black;
+	}
+	.loading{
+		width: 100%;
+		height: 100%;
+		position: fixed;
+		top:0;
+		left: 0;
+		z-index: 9999;
+		background:rgba(255,255,255,0.5);
+	}
+	.loading .pic{
+		width: 100px;
+		height: 100px;
+		background:url(/yn-rm-web/static/images/img-loading.gif);
+		position: absolute;
+		top: 0;
+		left: 0;
+		bottom: 0;
+		right: 0;
+		margin: auto;
+	}
+	.process-block{
+		display: inline-block;
+		height: 26px;
+		width: 24px;
+		line-height: 28px;
+		text-align: center;
+		color: black;
+		border: solid 1px rgba(63, 51, 97, 0.9);
+		margin-left: 2px;
+		margin-bottom: 2px;
+	}
+
+
+/*	.product{background: #009688;}
+	.repair{background: #f2f2f2;}*/
+	.product{background: #cff2c0;}
+	.repair{background: #edac87;}
+	.clearColor{background: #ffffff;}
+
+	.morning{background: #6975ff;}
+	.noon{background: #ff7e63;}
+	.night{background: #40ff4d;}
+	.rest{background: #9cfff8;}
+	.fix{background: #ca2ebd;}
+	.care{background: #caca0f;}
+</style>
+
+	
+<script>
+    var lineName; 					//当前选中的	 生产线名称
+    var lineCd;						//当前选中的	 生产线CD
+	var allDataByLineCd = [];  	    //数据库中的颜色
+	var changeDate = []; 			//改变过的日期
+    var startStr;					//拉动的开始时间
+    var endStr;						//拉动的结束时间
+
+	var allProcessData = [];		//全部的加工排程数据
+	var changeProcessData = [];		//用户改变过的加工排程数据
+
+    //阻止浏览器默认右键点击事件
+    $(document).on('contextmenu',function(e){
+        return false;
+    });
+
+	//获取数据库的日期生产信息 改变大格子颜色start
+	function getWorkDbData(lineCd){
+        doAjax(
+            zuulUrl + "/bs/workSchedule/getByLineCd",
+            "GET",
+            {prodLineCd:lineCd},
+            function(res) {
+                allDataByLineCd = [];
+                changeDate = [];
+                for (var i = 0; i < res.length; i++) {
+                    var oneData = new Object();
+                    oneData.workDate = res[i].workDate;
+                    oneData.prodStateCd = res[i].prodStateCd;
+                    oneData.prodLineCd = lineCd;
+                    allDataByLineCd.push(oneData);
+                }
+                changeColorByData(allDataByLineCd);
+            }
+        );
+	}
+    function changeColorByData(data) {
+        for (var i = 0; i < data.length; i++) {
+            var dateStr = "td[data-date='"+data[i].workDate+"']";
+            $(dateStr).removeClass("clearColor");
+            $(dateStr).removeClass("repair");//可能改动多次
+            $(dateStr).removeClass("product");
+            //生产
+            if(data[i].prodStateCd == "sc"){
+                $(dateStr).addClass("product");
+            }
+            //维修
+            if(data[i].prodStateCd == "wx"){
+                $(dateStr).addClass("repair");
+            }
+        }
+    }
+    function clearAllColor(data){
+        for (var i = 0; i < data.length; i++) {
+            var dateStr = "td[data-date='"+data[i].workDate+"']";
+            $(dateStr).removeClass("clearColor");
+            $(dateStr).removeClass("repair");//可能改动多次
+            $(dateStr).removeClass("product");
+        }
+    }
+    //获取数据库的日期生产信息 改变大格子颜色end
+
+	//获取加工排程表的信息  添加小方块的早中晚休 start
+    function getProcessDbData(lineCd){
+        doAjax(
+            zuulUrl + "/bs/processSchedule/getByLineCd",
+            "GET",
+            {prodLineCd:lineCd},
+            function(res) {
+                changeProcessData = [];
+                allProcessData = res;
+               addLittleBlockIcon(res);
+            }
+        );
+    }
+	function addLittleBlockIcon(data){
+        for (var i = 0; i < data.length; i++) {
+            var dateStr = "td[data-date='"+data[i].procDate+"']";
+            $(dateStr).children().children(".fc-day-content").children().append(getBlockHtmlStr(data[i]));
+        }
+    }
+    function getBlockHtmlStr(data){
+        //--sc生产  wx维修  by保养  xx休息
+        var morning = '<span class="layui-inline process-block morning">早</span>';
+        var noon = '<span class="layui-inline process-block noon">中</span>';
+        var night = '<span class="layui-inline process-block night">晚</span>';
+        var rest = '<span class="layui-inline process-block rest">休</span>';
+        var fix = '<span class="layui-inline process-block fix">修</span>';
+        var care = '<span class="layui-inline process-block care">保</span>';
+        var htmlStr = '';
+		if(data.prodShiftName == "早"){
+			if(data.prodStateCd == "sc"){
+				htmlStr = htmlStr + morning;
+			}
+			if(data.prodStateCd == "wx"){
+				htmlStr = htmlStr + fix;
+			}
+			if(data.prodStateCd == "by"){
+				htmlStr = htmlStr + care;
+			}
+			if(data.prodStateCd == "xx"){
+				htmlStr = htmlStr + rest;
+			}
+		}
+		if(data.prodShiftName == "中"){
+			if(data.prodStateCd == "sc"){
+				htmlStr = htmlStr + noon;
+			}
+			if(data.prodStateCd == "wx"){
+				htmlStr = htmlStr + fix;
+			}
+			if(data.prodStateCd == "by"){
+				htmlStr = htmlStr + care;
+			}
+			if(data.prodStateCd == "xx"){
+				htmlStr = htmlStr + rest;
+			}
+		}
+		if(data.prodShiftName == "晚"){
+			if(data.prodStateCd == "sc"){
+				htmlStr = htmlStr + night;
+			}
+			if(data.prodStateCd == "wx"){
+				htmlStr = htmlStr + fix;
+			}
+			if(data.prodStateCd == "by"){
+				htmlStr = htmlStr + care;
+			}
+			if(data.prodStateCd == "xx"){
+				htmlStr = htmlStr + rest;
+			}
+		}
+        return htmlStr;
+	}
+    //获取加工排程表的信息  添加小方块的早中晚休 end
+
+
+
+
+
+    //日历组件 start
+    $(function(){
+        loadToday();
+        loadCalendarByLineCd();
+        bandingCheckEvent();
+    });
+    function loadToday(){
+        var dayDate = new Date();
+        var d = $.fullCalendar.formatDate(dayDate,"dddd");
+        var m = $.fullCalendar.formatDate(dayDate,"yyyy年MM月dd日");
+        var lunarDate = lunar(dayDate);
+        $(".alm_date").html(m + "&nbsp;" + d);
+        $(".today_date").html(dayDate.getDate());
+        $("#alm_cnD").html("农历"+ lunarDate.lMonth + "月" + lunarDate.lDate);
+        $("#alm_cnY").html(lunarDate.gzYear+"年&nbsp;"+lunarDate.gzMonth+"月&nbsp;"+lunarDate.gzDate+"日");
+        $("#alm_cnA").html("【"+lunarDate.animal+"年】");
+        var fes = lunarDate.festival();
+        if(fes.length>0){
+            $(".alm_lunar_date").html($.trim(lunarDate.festival()[0].desc));
+            $(".alm_lunar_date").show();
+        }else{
+            $(".alm_lunar_date").hide();
+        }
+    }
+    function loadCalendarByLineCd(){
+        var date = new Date();
+        var d = date.getDate();
+        var m = date.getMonth();
+        var y = date.getFullYear();
+        var events = [];
+        $("#calendar").fullCalendar({
+            header : {
+                left : 'today',
+                center : 'title',
+                right : 'prev,next'
+            },
+            buttonText: {
+                prev: "<span class='fc-text-arrow'>&lsaquo;上个月</span>",
+                next: "<span class='fc-text-arrow'>下个月&rsaquo;</span>",
+                prevYear: "<span class='fc-text-arrow'>&laquo;上一年</span>",
+                nextYear: "<span class='fc-text-arrow'>下一年&raquo;</span>"
+            },
+            editable : true,
+            locale: 'zh-cn',
+            defaultDate: date,
+            navLinks: true,
+            selectable: true,
+            selectHelper: true,
+            eventLimit: true,
+            events: events,
+            select: function (start, end, allDay, ev) {
+                startStr = parseDate(start);
+                endStr = parseDate(end);
+                var check = $.fullCalendar.formatDate(start,'yyyy-MM-dd');
+                var today = $.fullCalendar.formatDate(new Date(),'yyyy-MM-dd');
+
+                if(ev.button == 2){//用右键拖拽的区域
+
+				}
+
+                if(ev.button == 0){//用左键拖拽的区域
+
+                }
+            },
+            dayClick : function(dayDate, allDay, jsEvent, view) {
+
+                if(jsEvent.button == '2'){
+                    console.log("右键");
+				}
+                if(jsEvent.button == '0'){
+
+                }
+            },
+			//加载完成之后用这个回调方法
+            eventAfterAllRender :function(){
+                //改变界面的颜色
+                changeColorByData(allDataByLineCd);
+                //给页面添加早中晚修的信息图标
+				addLittleBlockIcon(allDataByLineCd);
+			}
+        });
+    }
+    function bandingCheckEvent(){
+        $("#fc-dateSelect").delegate("select","change",function(){
+            var fcsYear = $("#fcs_date_year").val();
+            var fcsMonth = $("#fcs_date_month").val();
+            $("#calendar").fullCalendar('gotoDate', fcsYear, fcsMonth);
+        });
+    }
+    //日历组件 end
+
+
+	//保存加工计划和加工配方
+	function savePlanAndFormula() {
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+	//工具方法 转换日期   date类型 转为 8位字符串
+	function parseDate(date) {
+        var str = "";
+        str += date.getFullYear();
+        var mm = date.getMonth()+1;
+        if(date.getMonth()>9){
+            str += mm;
+        }
+        else{
+            str += "0" + mm;
+        }
+        if(date.getDate()>9){
+            str += date.getDate();
+        }
+        else{
+            str += "0" + date.getDate();
+        }
+        return str;
+    }
+    //工具方法 转换日期   date类型 转为 xxxx年xx月xx日
+    function parseDateWithNYR(date) {
+        var str = "" + date.getFullYear();
+        str += "年";
+        var mm = date.getMonth()+1;
+        if(date.getMonth()>9){
+            str += mm;
+        }
+        else{
+            str += "0" + mm;
+        }
+        str += "月";
+        if(date.getDate()>9){
+            str += date.getDate();
+        }
+        else{
+            str += "0" + date.getDate();
+        }
+        str += "日";
+        return str;
+    }
+    //工具方法 将yyyyMMdd 转化为yyyy-MM-dd
+	function date8To10(value) {
+        return value.substring(0, 4) + "-" + value.substring(4, 6) + "-" + value.substring(6, 8);
+    }
+    //工具方法  将yyyy-MM-dd转化为yyyyMMdd
+    function date10To8(value) {
+        return value.substring(0, 4) + value.substring(5, 7) + value.substring(8, 10);
+    }
+    //获取两个日期之前的日期数组    参数是都是10为的字符串   yyyy-MM-dd
+    function getBetweenDateStr(start,end){
+        var result = [];
+        var beginDay = start.split("-");
+        var endDay = end.split("-");
+        var diffDay = new Date();
+        var dateList = new Array;
+        var i = 0;
+        diffDay.setDate(beginDay[2]);
+        diffDay.setMonth(beginDay[1]-1);
+        diffDay.setFullYear(beginDay[0]);
+        result.push(start);
+        while(i == 0){
+            var countDay = diffDay.getTime() + 24 * 60 * 60 * 1000;
+            diffDay.setTime(countDay);
+            dateList[2] = diffDay.getDate();
+            dateList[1] = diffDay.getMonth() + 1;
+            dateList[0] = diffDay.getFullYear();
+            if( String(dateList[1]).length == 1){dateList[1] = "0"+dateList[1]};
+            if( String(dateList[2]).length == 1){dateList[2] = "0"+dateList[2]};
+            result.push(dateList[0]+"-"+dateList[1]+"-"+dateList[2]);
+            if(dateList[0] == endDay[0] && dateList[1] == endDay[1] && dateList[2] == endDay[2]){ i = 1;
+            }
+        }
+        return result;
+    }
+    //单击行选中radio
+    $(document).on('click', '.layui-table-body tr', function (e) {
+        $('.layui-form-radio', this).click();
+    });
+    $(document).on('click', '.layui-form-radio', function (e) {
+        e.stopPropagation();
+    });
+
+</script>
+</head>
+
+<body>
+<div class="layui-fluid">
+	<div class="layui-row">
+		<div class="layui-col-sm4" style="margin-top: 58px">
+			<div class="grid-demo grid-demo-bg1">
+				<div class="calendarWrapper">
+					<div class="rightSidePanel mb50 fr">
+						<div id="div_day_detail" class="h_calendar_alm">
+							<div class="alm_date"></div>
+							<div class="today_icon"></div>
+							<div class="alm_content nofestival">
+								<div class="today_date"></div>
+								<p id="alm_cnD"></p>
+								<p id="alm_cnY"></p>
+								<p id="alm_cnA"></p>
+								<div class="alm_lunar_date"></div>
+							</div>
+						</div>
+					</div>
+
+					<table class="layui-table" id="rm-store-prod-line" lay-filter="rm-store-prod-line"></table>
+
+					<div class="h_calendar_alm" style="text-align: left;width:99.5%;margin-bottom: 10px;padding-bottom: 10px;border: 1px solid #c3e6b3">
+						<div class="layui-inline layui-word-aux show-block" >正常排产颜色</div>
+						<span class="layui-inline show-block product"></span>
+						<div class="layui-inline layui-word-aux show-block">设备检修颜色</div>
+						<span class="layui-inline repair show-block"></span>
+						<br>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="layui-col-sm8">
+			<div class="grid-demo">
+				<div id="calendar" class="dib"></div>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+</body>
+</html>
