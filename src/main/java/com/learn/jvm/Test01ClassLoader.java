@@ -6,6 +6,10 @@ package com.learn.jvm;
  */
 public class Test01ClassLoader {
     public static void main(String[] args) throws ClassNotFoundException {
+
+
+
+
         //1、根加载器   启动类加载器   bootstrap
         Object o = new Object();
         System.out.println("Object : "+o.getClass().getClassLoader());
