@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>表格合并行工具</title>
+<link rel="stylesheet" href="../../static/layui/css/layui.css" media="all">
+<script type="text/javascript" src="../../static/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../static/jquery/jquery.browser.min.js"></script>
+<script type="text/javascript" src="../../static/js/ajax.js"></script>
+<script src="../../static/layui/layui.js" charset="utf-8"></script>
+<script src="../config.js"></script>
+<script src="../../static/handlebars/handlebars-v4.0.12.js"></script>
+<script src="../layui.table.utils.js"></script>
+
+	<script>
+	var teatTable1Data = [
+		{"location":"西南","cityName":"昆明","province":"云南","area":"100平方千米","prople":"300万"},
+        {"location":"西南","cityName":"曲靖","province":"云南","area":"100平方千米","prople":"700万"},
+        {"location":"西南","cityName":"玉溪","province":"云南","area":"100平方千米","prople":"600万"},
+        {"location":"西南","cityName":"成都","province":"四川","area":"100平方千米","prople":"400万"},
+        {"location":"西南","cityName":"宜宾","province":"四川","area":"100平方千米","prople":"400万"},
+        {"location":"西北","cityName":"银川","province":"宁夏","area":"100平方千米","prople":"500万"},
+        {"location":"西北","cityName":"乌鲁木齐","province":"新疆","area":"100平方千米","prople":"600万"},
+        {"location":"西北","cityName":"喀什","province":"新疆","area":"100平方千米","prople":"600万"},
+        {"location":"西北","cityName":"西宁","province":"青海","area":"100平方千米","prople":"500万"},
+        {"location":"西北","cityName":"兰州","province":"甘肃","area":"100平方千米","prople":"400万"},
+        {"location":"西北","cityName":"酒泉","province":"甘肃","area":"100平方千米","prople":"300万"},
+	];
+    var teatTable2Data = [
+        {"location2":"亚洲","cityName22":"北京","province2":"中国","area2":"100平方千米","prople2":"300万"},
+        {"location2":"亚洲","cityName2":"孟买","province2":"印度","area2":"100平方千米","prople2":"700万"},
+        {"location2":"亚洲","cityName2":"东京","province2":"日本","area2":"100平方千米","prople2":"600万"},
+        {"location2":"欧洲","cityName2":"巴黎","province2":"法国","area2":"100平方千米","prople2":"400万"},
+        {"location2":"欧洲","cityName2":"伦敦","province2":"英国","area2":"100平方千米","prople2":"400万"},
+        {"location2":"欧洲","cityName2":"伦敦2","province2":"英国","area2":"100平方千米","prople2":"500万"},
+        {"location2":"欧洲","cityName2":"柏林","province2":"德国","area2":"100平方千米","prople2":"600万"},
+        {"location2":"美洲","cityName2":"纽约","province2":"美国","area2":"100平方千米","prople2":"600万"},
+        {"location2":"美洲","cityName2":"纽约2","province2":"美国","area2":"100平方千米","prople2":"500万"},
+        {"location2":"美洲","cityName2":"华盛顿","province2":"美国","area2":"100平方千米","prople2":"400万"},
+        {"location2":"美洲","cityName2":"多伦多","province2":"加拿大","area2":"100平方千米","prople2":"300万"},
+    ];
+    var teatTable3Data = [
+        {"location3":"银河系","cityName3":"地球","province3":"太阳系","area3":"100平方千米","prople3":"300万"},
+        {"location3":"银河系","cityName3":"月球","province3":"太阳系","area3":"100平方千米","prople3":"700万"},
+        {"location3":"银河系","cityName3":"土星","province3":"太阳系","area3":"100平方千米","prople3":"600万"},
+        {"location3":"银河系","cityName3":"水星","province3":"太阳系","area3":"100平方千米","prople3":"400万"},
+        {"location3":"银河系","cityName3":"金星","province3":"太阳系","area3":"100平方千米","prople3":"400万"},
+        {"location3":"银河系","cityName3":"旅行者1号","province3":"太阳系","area3":"100平方千米","prople3":"500万"},
+        {"location3":"银河系","cityName3":"旅行者2号","province3":"太阳系","area3":"100平方千米","prople3":"600万"},
+        {"location3":"银河系","cityName3":"天王星","province3":"太阳系","area3":"100平方千米","prople3":"600万"},
+        {"location3":"三体星系","cityName3":"三体星1","province3":"半人马座三星","area3":"100平方千米","prople3":"500万"},
+        {"location3":"三体星系","cityName3":"三体星2","province3":"半人马座三星","area3":"100平方千米","prople3":"400万"},
+        {"location3":"三体星系","cityName3":"三体星2","province3":"半人马座三星","area3":"100平方千米","prople3":"300万"},
+    ];
+
+    layui.use('table', function(){
+        var table = layui.table;
+        table.render({
+            data:teatTable1Data,
+            title: '测试表格1',
+            elem: '#test-table1',
+            defaultToolbar: false,
+            page: false,
+            cols: [[
+                {type: 'radio', align: 'center'},
+                {field: 'location', title: '位置区域', align: 'center'},
+                {field: 'province', title: '省份', align: 'center'},
+                {field: 'area', title: '面积', align: 'center'},
+                {field: 'cityName', title: '城市', align: 'center'},
+                {field: 'prople', title: '人口数量', align: 'center'}
+            ]],
+            done:function () {
+                /**
+                 * 参数1  需要合并列的数组，0代表的是合并单选按钮或者是复选框 radio/checkbox 后端需要将这些字段进行排序
+                 * 参数2  当前表格的index (用于在一个页面中有使用了多个表格的情况，如果只有一个表格填0就行
+                 * 		  index这个值是表格加载的顺序，从0开始，如果页面上表格很多建议debug用 $(".layui-table-body")[index]看一下就拿到了)
+                 * 参数3  是按照html元素合并，还是按照标签中的text内容合并，建议填true
+                 * 参数4  radio/checkbox根据哪一行去合并
+                 */
+                layuiRowspan(['0','location', 'province', 'prople'],"0",true,"location");
+            }
+        });
+
+        table.render({
+            data:teatTable2Data,
+            title: '测试表格2',
+            elem: '#test-table2',
+            defaultToolbar: false,
+            page: false,
+            cols: [[
+                {type: 'checkbox', align: 'center'},
+                {field: 'location2', title: '位置区域', align: 'center'},
+                {field: 'province2', title: '省份', align: 'center'},
+                {field: 'area2', title: '面积', align: 'center'},
+                {field: 'cityName2', title: '城市', align: 'center'},
+                {field: 'prople2', title: '人口数量', align: 'center'}
+            ]],
+            done:function () {
+                /**
+                 * 参数1  需要合并列的数组，0代表的是合并单选按钮或者是复选框 radio/checkbox 后端需要将这些字段进行排序
+                 * 参数2  当前表格的index (用于在一个页面中有使用了多个表格的情况，如果只有一个表格填0就行
+                 * 		  index这个值是表格加载的顺序，从0开始，如果页面上表格很多建议debug用 $(".layui-table-body")[index]看一下就拿到了)
+                 * 参数3  是按照html元素合并，还是按照标签中的text内容合并，建议填true
+                 * 参数4  radio/checkbox根据哪一行去合并
+                 */
+                layuiRowspan(['0','location2', 'province2', 'prople2'],"1",true,"location2");
+            }
+        });
+
+        table.render({
+            data:teatTable3Data,
+            title: '测试表格3',
+            elem: '#test-table3',
+            defaultToolbar: false,
+            page: false,
+            cols: [[
+                {type: 'radio', align: 'center'},
+                {field: 'location3', title: '位置区域', align: 'center'},
+                {field: 'province3', title: '省份', align: 'center'},
+                {field: 'area3', title: '面积', align: 'center'},
+                {field: 'cityName3', title: '城市', align: 'center'},
+                {field: 'prople3', title: '人口数量', align: 'center'}
+            ]],
+            done:function(){
+                /**
+                 * 参数1  需要合并列的数组，0代表的是合并单选按钮或者是复选框 radio/checkbox 后端需要将这些字段进行排序
+                 * 参数2  当前表格的index (用于在一个页面中有使用了多个表格的情况，如果只有一个表格填0就行
+				 * 		  index这个值是表格加载的顺序，从0开始，如果页面上表格很多建议debug用 $(".layui-table-body")[index]看一下就拿到了)
+                 * 参数3  是按照html元素合并，还是按照标签中的text内容合并，建议填true
+                 * 参数4  radio/checkbox根据哪一行去合并
+                 */
+                layuiRowspan(['0','location3', 'province3', 'prople3'],"2",true,"location3");
+            }
+        });
+    });
+
+    //行合并 start
+    function execRadioRows(childFilterArr,ckChildFilterArr,flag){
+        //获取td的个数和种类
+        var chChildFilterTextObj = {};
+        var chText = [];
+        var chIndex = [];
+
+        for(var i = 0; i < ckChildFilterArr.length; i++){
+            var chChildText = flag?ckChildFilterArr[i].innerHTML:ckChildFilterArr[i].textContent;
+            if(chChildFilterTextObj[chChildText] == undefined){
+                chChildFilterTextObj[chChildText] = 1;
+                chText.push(chChildText);
+            }else{
+                var num = chChildFilterTextObj[chChildText];
+                chChildFilterTextObj[chChildText] = num*1 + 1;
+            }
+        }
+        for (var i = 0; i < chText.length; i++) {
+            var chNum = 0;
+            for (var j = 0; j < ckChildFilterArr.length ; j++) {
+                var chChildText = flag?ckChildFilterArr[j].innerHTML:ckChildFilterArr[j].textContent;
+                if(chText[i] == chChildText){
+                    chNum = chNum +1
+                }
+            }
+            chIndex.push(chNum);
+        }
+        var newIndex = [];
+        for (var i = 0; i < chIndex.length; i++) {
+            if(i == 0){
+                newIndex.push(0);
+            }else {
+                var newNum = 0;
+                for (var j = 0; j < chIndex.length; j++) {
+                    if(j<i){
+                        newNum = newNum +chIndex[j];
+                    }
+                }
+                newIndex.push(newNum);
+            }
+        }
+        chIndex = newIndex;
+
+        for (var j = 0; j < childFilterArr.length; j++) {
+            var findFlag = false;
+            for (var k = 0; k < chIndex.length; k++) {
+                if(j == chIndex[k]){
+                    findFlag = true;
+                    if(chIndex[k+1] != null){
+                        childFilterArr[j].setAttribute("rowspan",chIndex[k+1] - j);
+                        $(childFilterArr[j]).find("div.rowspan").parent("div.layui-table-cell").addClass("rowspanParent");
+                        $(childFilterArr[j]).find("div.layui-table-cell")[0].style.height= (chIndex[k+1] - j)*38-10 +"px";
+
+                    }else {
+                        childFilterArr[j].setAttribute("rowspan",childFilterArr.length - j);
+                        $(childFilterArr[j]).find("div.rowspan").parent("div.layui-table-cell").addClass("rowspanParent");
+                        $(childFilterArr[j]).find("div.layui-table-cell")[0].style.height= (childFilterArr.length - j)*38-10 +"px";
+                    }
+                }
+            }
+            if(findFlag == false){
+                childFilterArr[j].style.display = "none";
+            }
+        }
+    }
+    function execRowspan (fieldName,index,flag,ckRows){
+        var fixedNode = $(".layui-table-body")[index];
+        var child = $(fixedNode).find("td");
+        var childFilterArr = [];
+        for(var j = 0; j < child.length; j++){
+            child[j].getAttribute('data-field')
+            if(child[j].getAttribute("data-field") == fieldName){
+                childFilterArr.push(child[j]);
+            }
+        }
+
+        var ckChildFilterArr = [];
+        if(fieldName == "0"){
+            for(var j = 0; j < child.length; j++){
+                child[j].getAttribute('data-field')
+                if(child[j].getAttribute("data-field") == ckRows){
+                    ckChildFilterArr.push(child[j]);
+                }
+            }
+            execRadioRows(childFilterArr,ckChildFilterArr,flag);
+            return;
+        }
+
+        //获取td的个数和种类
+        var childFilterTextObj = {};
+        for(var i = 0; i < childFilterArr.length; i++){
+            var childText = flag?childFilterArr[i].innerHTML:childFilterArr[i].textContent;
+            if(childFilterTextObj[childText] == undefined){
+                childFilterTextObj[childText] = 1;
+            }else{
+                var num = childFilterTextObj[childText];
+                childFilterTextObj[childText] = num*1 + 1;
+            }
+        }
+        var canRowspan = true;
+        var maxNum;//以前列单元格为基础获取的最大合并数
+        var finalNextIndex;//获取其下第一个不合并单元格的index
+        var finalNextKey;//获取其下第一个不合并单元格的值
+        for(var i = 0; i < childFilterArr.length; i++){
+            (maxNum >9000 || !maxNum)&&(maxNum = $(childFilterArr[i]).prev().attr("rowspan")&&fieldName!="8"?$(childFilterArr[i]).prev().attr("rowspan"):9999);
+            var key = flag?childFilterArr[i].innerHTML:childFilterArr[i].textContent;//获取下一个单元格的值
+            var nextIndex = i+1;
+            var tdNum = childFilterTextObj[key];
+            var curNum = maxNum<tdNum?maxNum:tdNum;
+            if(canRowspan){
+                for(var j =1;j<=curNum&&(i+j<childFilterArr.length);){//循环获取最终合并数及finalNext的index和key
+                    finalNextKey = flag?childFilterArr[i+j].innerHTML:childFilterArr[i+j].textContent;
+                    finalNextIndex = i+j;
+                    if((key!=finalNextKey&&curNum>1)||maxNum == j){
+                        canRowspan = true;
+                        curNum = j;
+                        break;
+                    }
+                    j++;
+                    if((i+j)==childFilterArr.length){
+                        finalNextKey=undefined;
+                        finalNextIndex=i+j;
+                        break;
+                    }
+                }
+                childFilterArr[i].setAttribute("rowspan",curNum);
+                if($(childFilterArr[i]).find("div.rowspan").length>0){//设置td内的div.rowspan高度适应合并后的高度
+                    $(childFilterArr[i]).find("div.rowspan").parent("div.layui-table-cell").addClass("rowspanParent");
+                    $(childFilterArr[i]).find("div.layui-table-cell")[0].style.height= curNum*38-10 +"px";
+                }
+                canRowspan = false;
+            }else{
+                childFilterArr[i].style.display = "none";
+            }
+            if( --childFilterTextObj[key] == 0 | --maxNum==0 | --curNum==0 | (finalNextKey!=undefined && nextIndex==finalNextIndex)){
+                canRowspan = true;
+            }
+        }
+    }
+    function layuiRowspan(fieldNameTmp,index,flag,ckRows){
+        var fieldName = [];
+        if(typeof fieldNameTmp == "string"){
+            fieldName.push(fieldNameTmp);
+        }else{
+            fieldName = fieldName.concat(fieldNameTmp);
+        }
+        for(var i = 0;i<fieldName.length;i++){
+            execRowspan(fieldName[i],index,flag,ckRows);
+        }
+    }
+    //行合并 end
+</script>
+</head>
+<body>
+<div class="layui-fluid">
+	<div class="layui-row layui-col-space10">
+		<div class="layui-col-sm4">
+			<div class="grid-demo grid-demo-bg1">
+				<table class="layui-table" id="test-table1" lay-filter="test-table1"></table>
+			</div>
+		</div>
+		<div class="layui-col-sm4">
+			<div class="grid-demo">
+				<table class="layui-table" id="test-table2" lay-filter="test-table2"></table>
+			</div>
+		</div>
+		<div class="layui-col-sm4">
+			<div class="grid-demo">
+				<table class="layui-table" id="test-table3" lay-filter="test-table3"></table>
+			</div>
+		</div>
+
+	</div>
+</div>
+</body>
+</html>
+
