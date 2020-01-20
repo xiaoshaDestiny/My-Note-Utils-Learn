@@ -12,6 +12,7 @@
         <module>learn-jedis</module>
         <module>learn-data-tructure</module>
         <module>learn-juc-jvm</module>
+        <module>learn-jvm-system</module>
     </modules>
 
     <dependencies>
