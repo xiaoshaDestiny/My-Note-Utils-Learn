@@ -24,10 +24,31 @@ package com.learn.item1;
  * 4、花费更少的指令去完成一项操作。
  * 5、在大部分情况下，基于寄存器架构的指令集往往都以一地址指令，二地址指令和三地址指令为主，而基于栈式架构的指令集往往却是以零地址指令为主。
  *
+ *
+ * 总结：由于跨平台性质的设计，Java的指令都是根据栈来设计的。
+ * 不同平台的CPU架构不同，所以不能设计为基于寄存器的。
+ * 优点就是跨平台，指令集小，编译容易实现。
+ * 缺点是性能下降，实现同样的功能需要更多的指令。
  */
 
 public class StackStructureTest {
     public static void main(String[] args) {
-        int i = 2 + 3;
+        int i = 1;
+        int j = 2;
+        int k = i + j;
+
+        /**
+         * Code:
+         *       stack=2, locals=4, args_size=1
+         *          0: iconst_1
+         *          1: istore_1
+         *          2: iconst_2
+         *          3: istore_2
+         *          4: iload_1
+         *          5: iload_2
+         *          6: iadd
+         *          7: istore_3
+         *          8: return
+         */
     }
 }
