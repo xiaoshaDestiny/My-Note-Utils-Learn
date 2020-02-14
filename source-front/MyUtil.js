@@ -140,6 +140,38 @@ $(document).on("click", "td div.laytable-cell-checkbox div.layui-form-checkbox",
 });
 
 
+//9
+//正整数规则检查
+function positiveIntegerRuleCheck(value){
+    value = value.replace(/[^\d]/g,"");//去掉所有不是数字的输入
+    value = value.replace(/^[0]+[0-9]*$/gi,"");//去掉是0开头的输入
+    return value;
+}
+
+
+
+//做了一个功能，layui的table的一行数据，其中一列的值变了，另一列的值也跟着变动
+//下拉选的lay-filter设置成 samplingCd  改变的列是第3列
+layui.use('form', function () {
+    var form = layui.form;
+    form.on('select(samplingCd)', function(data){
+        data.othis.parent().parent().parent().parent().children()[2].children[0].innerHTML = "";
+        for (var i = 0; i < allData.length; i++) {
+            if(allData[i].samplingCd == data.elem.id){
+                allData[i].edit = true;
+                allData[i].schemeId = data.value;
+                var pcStr = "1次/";
+                for (var j = 0; j < allData[i].schemeList.length; j++) {
+                    if(allData[i].schemeList[j].id == data.value){
+                        allData[i].interval = allData[i].schemeList[j].interval;
+                        pcStr = pcStr + allData[i].schemeList[j].interval + "h";
+                        data.othis.parent().parent().parent().parent().children()[2].children[0].append(pcStr);
+                    }
+                }
+            }
+        }
+    });
+});
 
 
 
