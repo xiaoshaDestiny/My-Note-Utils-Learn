@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>表格合并行工具</title>
+<link rel="stylesheet" href="../../static/layui/css/layui.css" media="all">
+<script type="text/javascript" src="../../static/jquery/jquery.min.js"></script>
+<script type="text/javascript" src="../../static/jquery/jquery.browser.min.js"></script>
+<script type="text/javascript" src="../../static/js/ajax.js"></script>
+<script src="../../static/layui/layui.js" charset="utf-8"></script>
+<script src="../config.js"></script>
+<script src="../../static/handlebars/handlebars-v4.0.12.js"></script>
+<script src="../layui.table.utils.js"></script>
+
+<!-- toolbar 模板，请注意 lay-event -->
+<script type="text/html" id="barExpand1">
+	<a lay-event="expand1"><i class="layui-icon layui-icon-triangle-r"></i></a>
+</script>
+<script>
+    // 引入方法
+    layui.config({
+        base: '../'}).extend({layerTable: 'layui.table.utils'}).use(['layerTable'], function () {
+        var layerTable = layui.layerTable;
+    });
+
+	var teatTable1Data = [
+        {"location":"西南","cityName":"昆明","province":"云南","area":"100平方千米","prople":"300万"},
+        {"location":"西南","cityName":"曲靖","province":"云南","area":"100平方千米","prople":"700万"},
+        {"location":"西南","cityName":"玉溪","province":"云南","area":"100平方千米","prople":"600万"},
+        {"location":"西南","cityName":"成都","province":"四川","area":"100平方千米","prople":"400万"},
+        {"location":"西南","cityName":"宜宾","province":"四川","area":"100平方千米","prople":"400万"},
+        {"location":"西北","cityName":"银川","province":"宁夏","area":"100平方千米","prople":"500万"},
+        {"location":"西北","cityName":"乌鲁木齐","province":"新疆","area":"100平方千米","prople":"600万"},
+        {"location":"西北","cityName":"喀什","province":"新疆","area":"100平方千米","prople":"600万"},
+        {"location":"西北","cityName":"西宁","province":"青海","area":"100平方千米","prople":"500万"},
+        {"location":"西北","cityName":"兰州","province":"甘肃","area":"100平方千米","prople":"400万"},
+        {"location":"西北","cityName":"酒泉","province":"甘肃","area":"100平方千米","prople":"300万"},
+    ];
+	var teatTable2Data = [
+		{"location2":"亚洲","cityName2":"北京","province2":"中国","area2":"100平方千米","prople2":"300万"},
+		{"location2":"亚洲","cityName2":"孟买","province2":"印度","area2":"100平方千米","prople2":"700万"},
+		{"location2":"亚洲","cityName2":"东京","province2":"日本","area2":"100平方千米","prople2":"600万"},
+		{"location2":"欧洲","cityName2":"巴黎","province2":"法国","area2":"100平方千米","prople2":"400万"},
+		{"location2":"欧洲","cityName2":"伦敦","province2":"英国","area2":"100平方千米","prople2":"400万"},
+		{"location2":"欧洲","cityName2":"伦敦2","province2":"英国","area2":"100平方千米","prople2":"500万"},
+		{"location2":"欧洲","cityName2":"柏林","province2":"德国","area2":"100平方千米","prople2":"600万"},
+		{"location2":"美洲","cityName2":"纽约","province2":"美国","area2":"100平方千米","prople2":"600万"},
+		{"location2":"美洲","cityName2":"纽约2","province2":"美国","area2":"100平方千米","prople2":"500万"},
+		{"location2":"美洲","cityName2":"华盛顿","province2":"美国","area2":"100平方千米","prople2":"400万"},
+		{"location2":"美洲","cityName2":"多伦多","province2":"加拿大","area2":"100平方千米","prople2":"300万"},
+	];
+
+
+
+	layui.use('table', function() {
+        var table = layui.table;
+		var tbOptions = {
+            data:teatTable2Data,
+            title: '测试表格2',
+            elem: '#mainList',
+            defaultToolbar: false,
+            page: false,
+            cols: [[
+                {title: '', toolbar: '#barExpand1', width: 50}, // 重点是这里加载 toolbar
+                {field: 'location2', title: '位置区域', align: 'center',width:200},
+                {field: 'province2', title: '省份', align: 'center',width:200},
+                {field: 'area2', title: '面积', align: 'center',width:200},
+                {field: 'cityName2', title: '城市', align: 'center',width:200},
+                {field: 'prople2', title: '人口数量', align: 'center',width:200},
+            ]],
+		};
+		var insTb = table.render(tbOptions); // 渲染
+		table.on('tool(test)', function (obj) {
+			var data = obj.data;
+			var layerTbOptions = {
+				mainElem: '#mainList', // main table 容器
+				data: teatTable1Data,
+				cols: [[
+					{field: 'location', title: '位置区域', align: 'center',width:240},
+					{field: 'province', title: '省份', align: 'center',width:200},
+					{field: 'area', title: '面积', align: 'center',width:200},
+					{field: 'cityName', title: '城市', align: 'center',width:200},
+					{field: 'prople', title: '人口数量', align: 'center',width:200},
+				]],
+				width:1050,
+				rowData: data,
+				eventObj: obj,
+				reqField: ['location2'],
+				jQueryThis: $(this),
+				jQueryTr: $(this).parents('tr'),
+				layEvents: {
+					expand: {func: 'closed1', title: '', icon: 'layui-icon-triangle-d'}, // 展开事件
+					closed: {func: 'expand1', title: '', icon: 'layui-icon-triangle-r'}, // 折叠事件
+				},
+				logOn: false, // 开启 log 打印，建议正式发布版本设置为false。默认=false
+			};
+
+			switch (obj.event) {
+				case 'expand1':
+					layerTbOptions.layEvent = '1';
+					layui.use(['layerTable'], function () {
+						var layerTable = layui.layerTable;
+						layerTable.render(layerTbOptions);
+					});
+					break;
+
+				case 'closed1':
+					layerTbOptions.layEvent = '2';
+					layui.use(['layerTable'], function () {
+						var layerTable = layui.layerTable;
+						layerTable.render(layerTbOptions);
+					});
+					break;
+			}
+		});
+	});
+
+</script>
+
+</head>
+<body>
+
+<div class="layui-fluid">
+	<table class="layui-table layui-btn-group table_list layui-hide" id="mainList" lay-filter="test"></table>
+</div>
+</body>
+</html>
+
