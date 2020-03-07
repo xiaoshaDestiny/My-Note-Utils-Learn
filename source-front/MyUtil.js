@@ -562,5 +562,35 @@ layui.define(['table', 'laytpl'], function (exports) {
 //表格折叠 End
 
 
+//layui 时间选择 第二次渲染无效解决方案
+//思路是 copy一个相同的时间输入
+function loadTime(min,max) {
+    layui.use('laydate', function(){
+        var laydate = layui.laydate;
+        laydate.render({
+            elem: '#plan-sampling-time',
+            type: 'time',
+            format: 'HH:mm',
+            min: min,
+            max: max,
+            btns: ['clear', 'confirm']
+        });
+    });
+}
+function destroyTime() {
+    $("#plan-sampling-time").each(function (index, elemTemp) {
+        elemTemp = $(elemTemp);
+        var key = elemTemp.attr('lay-key');
+        if (key) {
+            // 如果打开着就给关掉
+            $('#layui-laydate' + key).remove();
+        }
+        // copy 当前的节点
+        var nodeClone = elemTemp.clone(true);
+        // 替换节点 去掉lay-key方便后面重新render
+        elemTemp.replaceWith(nodeClone.attr('lay-key', null));
+    });
+}
+//end
 
 
