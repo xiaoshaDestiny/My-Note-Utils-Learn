@@ -88,6 +88,8 @@
 				reqField: ['location2'],
 				jQueryThis: $(this),
 				jQueryTr: $(this).parents('tr'),
+                //需要隐藏掉展开表格的表头，就加上这一行
+                //renderHeader: function (that, res) {that.find(".layui-table-box thead tr").css("display", "none");},
 				layEvents: {
 					expand: {func: 'closed1', title: '', icon: 'layui-icon-triangle-d'}, // 展开事件
 					closed: {func: 'expand1', title: '', icon: 'layui-icon-triangle-r'}, // 折叠事件

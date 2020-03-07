@@ -149,7 +149,7 @@ function positiveIntegerRuleCheck(value){
 }
 
 
-
+//10
 //做了一个功能，layui的table的一行数据，其中一列的值变了，另一列的值也跟着变动
 //下拉选的lay-filter设置成 samplingCd  改变的列是第3列
 layui.use('form', function () {
@@ -174,9 +174,11 @@ layui.use('form', function () {
 });
 
 
-
+//11
 //表格折叠 Start
-//表格折叠  网上找来的 原文链接：     https://fly.layui.com/jie/62437/
+//表格折叠  网上找来的 原文链接：
+// https://fly.layui.com/jie/62437/
+// https://gitee.com/hzxun/layerTable
 /**
  * 面板扩展表格 2.x
  * date:2020-01-05
@@ -222,9 +224,7 @@ layui.define(['table', 'laytpl'], function (exports) {
         size: 'sm',  // 表格尺寸，默认=sm
         even: true,  // 是否开启隔行变色，默认=true
         evenColor: "#C8EFD4", // 隔行变色的底色，默认=#C8EFD4
-
         parseData: function (res) { return parseData(this, res); },
-        renderHeader: function (that, res) { return renderHeader(this, that, res); }, // 完成后的回调，处理 header
         renderTable: function (that, res, curr, count) { return renderTable(this, that, res, curr, count); }, // 完成后的回调，处理 table
         renderEvenRow: function (that, res) { return renderEvenRow(this, that, res); }, // 完成后的回调，处理 table even row
 
@@ -517,18 +517,6 @@ layui.define(['table', 'laytpl'], function (exports) {
     };
 
     /**
-     * 设置表格头header样式
-     * @param options
-     * @param that
-     * @param res
-     */
-    var renderHeader = function (options, that, res) {
-        var thead = that.find(".layui-table-box thead tr");
-        thead.css("display", "none"); // 隐藏表头
-        // that.find(".layui-table-box thead tr").css("display", "none"); // 隐藏表头
-    };
-
-    /**
      * done之后的回调，设置 表格
      * @param options
      * @param that
@@ -558,10 +546,10 @@ layui.define(['table', 'laytpl'], function (exports) {
     };
     exports('layerTable', layerTB);
 });
-
 //表格折叠 End
 
 
+//12
 //layui 时间选择 第二次渲染无效解决方案
 //思路是 copy一个相同的时间输入
 function loadTime(min,max) {
