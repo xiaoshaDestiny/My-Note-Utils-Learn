@@ -52,9 +52,5 @@ public class JmsProdece {
         connection.close();
 
         System.out.println("************消息生产并且成功发送到MQ************");
-
-
-
-
     }
 }
