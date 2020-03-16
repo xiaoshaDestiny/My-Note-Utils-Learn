@@ -100,11 +100,20 @@ function date10To8(value) {
 // 正数  小数  检查规则   只允许输入正数，可以是小数
 function positiveNumberCheck(value){
     value = value.replace(/[^\d,.]/g,""); //清除"数字"和"."以外的字符
-    value = value.replace(/[^\d.]/g,""); //清除"数字"和"."以外的字符
     value = value.replace(/^\./g,""); //验证第一个字符是数字而不是"."
     value = value.replace(/\.{2,}/g,"."); //只保留第一个. 清除多余的"."
     value = value.replace(".","$#$").replace(/\./g,"").replace("$#$",".");//只允许输入一个小数点
     value = value.replace(/^[0]+[0-9]*$/gi,"0");//不能是0开头,输入了0 下一个不能仔输入数字，只能输入"."
+    return value;
+}
+//允许输入正数负数  可以输小数
+function numberCheck(value){
+    value = value.replace(/[^\d.-]/g,""); //清除"数字"和"."以外的字符
+    value = value.replace(/^\./g,""); //验证第一个字符是数字而不是"."
+    value = value.replace(/\.{2,}/g,"."); //只保留第一个. 清除多余的"."
+    value = value.replace(".","$#$").replace(/\./g,"").replace("$#$",".");//只允许输入一个小数点
+    value = value.replace(/^[0]+[0-9]*$/gi,"0");//不能是0开头,输入了0 下一个不能仔输入数字，只能输入"."
+    value = value.replace(/^\-+\./g,"-");
     return value;
 }
 
@@ -147,6 +156,7 @@ function positiveIntegerRuleCheck(value){
     value = value.replace(/^[0]+[0-9]*$/gi,"");//去掉是0开头的输入
     return value;
 }
+
 
 
 //10
