@@ -18,8 +18,7 @@ public class JmsProdece {
     public static void main(String[] args) throws JMSException {
 
         //1、创建链接工厂，按照给定的URL地址，采用默认的用户名和密码
-        ActiveMQConnectionFactory activeMQConnectionFactory =
-                new ActiveMQConnectionFactory(ACTIVEMQ_URL);
+        ActiveMQConnectionFactory activeMQConnectionFactory = new ActiveMQConnectionFactory(ACTIVEMQ_URL);
 
         //2、通过链接工厂，获得链接connection并启动访问
         Connection connection = activeMQConnectionFactory.createConnection();
@@ -36,8 +35,7 @@ public class JmsProdece {
         MessageProducer messageProducer = session.createProducer(queue);
 
         //6、 发送消息  消息生产者生产三条消息，发送到mq的队列里面
-        for (int i = 1;i <=3 ; i++) {
-
+        for (int i = 1;i <=10 ; i++) {
             //7、创建消息
             //字符串
             TextMessage textMessage = session.createTextMessage("myMsg---" + i);
