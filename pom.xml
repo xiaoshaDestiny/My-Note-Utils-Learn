@@ -14,6 +14,7 @@
         <module>learn-juc-jvm</module>
         <module>learn-jvm-system</module>
         <module>learn-activemq</module>
+        <module>learn-design-pattern</module>
     </modules>
 
     <build>
