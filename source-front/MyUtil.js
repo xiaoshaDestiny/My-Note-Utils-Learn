@@ -591,4 +591,213 @@ function destroyTime() {
 }
 //end
 
+//13
+//表格 分页 复选框 过滤  start
+layui.define(['jquery', 'table'], function (exports) {
+    var $ = layui.jquery, table = layui.table;
+    //记录选中表格记录编号
+    var checkedList = {};
+    var tableCheckBoxUtil = {
+        //初始化分页设置
+        init: function (settings) {
+            checkedList[settings.gridId] = settings.ids;
+            var param = {
+                gridId: '',//表格id
+                filterId: '',//表格lay-filter值
+                fieldName: '' //表格主键字段名
+            };
+            $.extend(param, settings);
+
+            //设置当前保存数据参数
+            if (checkedList[param.gridId] == null) {
+                checkedList[param.gridId] = [];
+            }
+
+            //监听选中行
+            table.on('checkbox(' + param.filterId + ')', function (obj) {
+                var type = obj.type;
+                var checked = obj.checked;
+                console.log(table);
+
+                //当前页数据
+                var currentPageData = table.cache[param.gridId];
+                //当前选中数据
+                var checkRowData = [];
+                //当前取消选中的数据
+                var cacelCheckedRowData = [];
+
+                //debugger;
+                //选中
+                if (checked) {
+                    checkRowData = table.checkStatus(param.gridId).data;
+                }
+                //取消选中
+                else {
+                    if (type == 'all') {
+                        cacelCheckedRowData = currentPageData;
+                    }
+                    else {
+                        cacelCheckedRowData.push(obj.data);
+                    }
+                    //console.log(cacelCheckedRowData);
+                }
+                //debugger;
+                //清除数据
+                $.each(cacelCheckedRowData, function (index, item) {
+                    var itemValue = item[param.fieldName];
+
+                    checkedList[param.gridId] = checkedList[param.gridId].filter(function (fItem, fIndex) {
+                        return fItem != itemValue;
+                    })
+                });
+
+                //添加选中数据
+                $.each(checkRowData, function (index, item) {
+                    var itemValue = item[param.fieldName];
+                    if (checkedList[param.gridId].indexOf(itemValue) < 0) {
+                        checkedList[param.gridId].push(itemValue);
+                    }
+                });
+            });
+        },
+        //设置页面默认选中（在表格加载完成之后调用）
+        checkedDefault: function (settings) {
+            var param = {
+                gridId: '',
+                fieldName: ''
+            };
+
+            $.extend(param, settings);
+
+            //当前页数据
+            var currentPageData = table.cache[param.gridId];
+            if (checkedList[param.gridId] != null && checkedList[param.gridId].length > 0) {
+                $.each(currentPageData, function (index, item) {
+                    var itemValue = item[param.fieldName];
+
+                    if (checkedList[param.gridId].indexOf(itemValue) >= 0) {
+                        //设置选中状态
+                        item.LAY_CHECKED = true;
+
+                        var rowIndex = item['LAY_TABLE_INDEX'];
+                        updateRowCheckStatus(param.gridId, 'tr[data-index=' + rowIndex + '] input[type="checkbox"]');
+                    }
+                });
+            }
+            //判断当前页是否全选
+            var currentPageCheckedAll = table.checkStatus(param.gridId).isAll;
+            if (currentPageCheckedAll) {
+                updateRowCheckStatus(param.gridId, 'thead tr input[type="checkbox"]');
+            }
+        },
+        //获取当前获取的所有集合值,
+        getValue: function (settings) {
+            var param = {
+                gridId: '' //表格id
+            };
+            $.extend(param, settings);
+
+            return checkedList[param.gridId];
+        },
+        //设置选中的id（一般在编辑时候调用初始化选中值）
+        setIds: function (settings) {
+            var param = {
+                gridId: '',
+                ids: []//数据集合
+            };
+            $.extend(param, settings);
+            checkedList[param.gridId] = [];
+            $.each(param.ids, function (index, item) {
+                checkedList[param.gridId].push(parseInt(item));
+            });
+        }
+    };
+
+    var updateRowCheckStatus = function (gridId, ele) {
+        var layTableView = $('.layui-table-view');
+        //一个页面多个表格，这里防止更新表格错误
+        $.each(layTableView, function (index, item) {
+            if ($(item).attr('lay-id') == gridId) {
+                $(item).find(ele).prop('checked', true);
+                $(item).find(ele).next().addClass('layui-form-checked');
+            }
+        });
+    }
+    //输出
+    exports('tableCheckBoxUtil', tableCheckBoxUtil);
+});
+//表格 分页 复选框 过滤  end
+/**
+ * 使用
+ *
+ *
+ <!--第1步：引入js-->
+ <script src="../layui.table.utils.js"></script>
+
+ //第2步：获取js对象
+ var tableCheckBoxUtil = layui.tableCheckBoxUtil;
+
+function renderTeamTable() {
+    layui.use(['table'], function () {
+        table = layui.table;
+        tableCheckBoxUtil = layui.tableCheckBoxUtil;
+
+        tableIns = table.render({
+            elem: '#rm-auth-person-add-person',
+            url: zuulUrl + "/base/peopleCertification/pageWithParam",
+            headers: {"_token": _token},
+            defaultToolbar: false,
+            page: true,
+            cols: [[
+                {type: 'checkbox', fixed: 'left'},
+                {field: 'userName', title: '用户', fixed: 'left'},
+                {field: 'accountName', title: '账号',fixed: 'left'},
+                {field: 'userId', title: '账号',fixed: 'left'},
+            ]],
+            id: 'rm-auth-person-add-person',
+            parseData: function (res) {
+                return {
+                };
+            },
+            done: function (res) {
+                //第4步：初始化表格行选中状态 表格加载完成之后调用
+                tableCheckBoxUtil.checkedDefault({
+                    gridId: 'rm-auth-person-add-person',
+                    fieldName: 'userId'
+                });
+
+                //第5步：获取值
+                //翻页之后，存一下数据  返回的是id的数组
+                personIds = tableCheckBoxUtil.getValue({gridId: 'rm-auth-person-add-person'});
+
+            }
+        });
+
+        //第3步：初始化分页设置
+        //gridId 表格定义的id，在table.render里面定义的
+        //filterId 标签上的过滤id
+        //fieldName 这个表格数据的主键
+        //ids:数据库里面的  需要反显的id List
+        tableCheckBoxUtil.init({
+            gridId: 'rm-auth-person-add-person',
+            filterId: 'rm-auth-person-add-person',
+            fieldName: 'userId',
+            ids:personIds
+        });
+    });
+}
+
+//保存
+function addAuthPerson() {
+    //第6步：在保存之前获取勾选上的id数组
+    personIds = tableCheckBoxUtil.getValue({gridId: 'rm-auth-person-add-person'});
+}
+
+ *
+ *
+ *
+ *
+ */
+
+
 
