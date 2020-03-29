@@ -23,7 +23,10 @@ public class SingletonTest {
 }
 
 class Singleton{
-    private static Singleton instance;
+    /**
+     * 这个实例变量用volatile关键字修饰，保证线程内存可见
+     */
+    private static volatile Singleton instance;
 
     private Singleton(){
     }
