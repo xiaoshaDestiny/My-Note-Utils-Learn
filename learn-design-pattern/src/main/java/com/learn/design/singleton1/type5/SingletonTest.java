@@ -10,7 +10,11 @@ package com.learn.design.singleton1.type5;
  * 步骤3：提供一个静态的公有方法，当使用到该方法时，才去创建 instance
  *        为了解决线程安全问题，在get方法里面使用一个同步代码块
  *
- * 结论：不推荐使用
+ * 本意其实是对第四种方式的改进，因为方法4的同步效率太低，所以改为了同步代码块。
+ * 但是：
+ * 这种同步并不能起到线程同步的作用。假如两个线程同时进入了if语句，都有可能会产生多个实例。
+ *
+ * 结论：坚决不能使用这种单例模式。
  */
 public class SingletonTest {
     public static void main(String[] args) {
