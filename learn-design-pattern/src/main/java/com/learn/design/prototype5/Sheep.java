@@ -11,6 +11,15 @@ public class Sheep implements Cloneable{
     private int age;
     private String color;
 
+    private Sheep friend;
+
+    public Sheep getFriend() {
+        return friend;
+    }
+
+    public void setFriend(Sheep friend) {
+        this.friend = friend;
+    }
 
     @Override
     public Sheep clone(){
@@ -54,13 +63,13 @@ public class Sheep implements Cloneable{
         this.color = color;
     }
 
-
     @Override
     public String toString() {
         return "Sheep{" +
                 "name='" + name + '\'' +
                 ", age=" + age +
                 ", color='" + color + '\'' +
+                ", friend=" + friend +
                 '}';
     }
 }
