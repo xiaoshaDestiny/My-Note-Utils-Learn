@@ -23,7 +23,7 @@ import java.util.concurrent.*;
  *
  * 线程池的五大参数意义？
  *
- * 一、newFixedThreadPool(int nThread){}  执行长期任务，性能好很多
+ * 一、Executors.newFixedThreadPool(int nThread){}  执行长期任务，性能好很多
  * 特点：
  * 1、创建一个定长线程池，可以控制最大并发数量，超出的线程会在队列中等待。
  * 2、newFixedThreadPool创建线程池corePoolSize和minMumPoolSize是相等的，使用的是LinkedBlockingQueue
@@ -35,7 +35,7 @@ import java.util.concurrent.*;
  *
  * 三、Executors.newCachedThreadPool(){} 执行很多短期异步的小程序或者负载较轻的服务器
  * 特点：
- * 1、创建一个可以缓存的线程池，如果线程池长度超过处理需要，可以里胡哦哦回收空线程，若无可收回，则创建新的线程
+ * 1、创建一个可以缓存的线程池，如果线程池长度超过处理需要，可以回收空线程，若无可收回，则创建新的线程
  * 2、newCacheThreadPool将corePoolSize设置为0，将maximumPoolSize设置为Integer.MAXVALUE，使用的是SynchronousQueue，也就是说来任务就创建线程运行，当线程空闲超过60秒，就销毁线程
  *
  * 其余两个创建线程池的方式
@@ -73,7 +73,7 @@ import java.util.concurrent.*;
  *
  *
  * JDK内置的拒绝策略：
- * 1、AbortPolicy(莫仍)：直接抛出RejectedException异常阻止系统正常运行
+ * 1、AbortPolicy(默认)：直接抛出RejectedException异常阻止系统正常运行
  * 2、CallerRunsPolicy:“调用者运行”一种调节机制，给策略既不会抛弃任务，也不会抛出异常，而是将某些任务回退带调用者，从而降低新任务的流量。
  * 3、DiscardOldestPolicy:抛弃队列中等待最久的任务，然后把当前任务加入队列中尝试再次提交当前任务。
  * 4、DiscardPolicy:直接丢弃任务，不予处理也不抛出异常。如果运行任务失败，这是最好的一种方案。
