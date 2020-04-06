@@ -20,5 +20,7 @@ public class ProtoTypeTest {
         System.out.println(bean.hashCode());
         System.out.println(bean1.hashCode());
 
+
+
     }
 }

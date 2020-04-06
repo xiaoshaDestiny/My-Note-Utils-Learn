@@ -34,6 +34,9 @@ public class DeepProtoType implements Serializable,Cloneable {
     }
     //深拷贝的实现方式二  通过序列化方式 (推荐使用)
 
+
+
+
     public Object deepClone(){
         ByteArrayOutputStream bos = null;
         ObjectOutputStream oos = null;
