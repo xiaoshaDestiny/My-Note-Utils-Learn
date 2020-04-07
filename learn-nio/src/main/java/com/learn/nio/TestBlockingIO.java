@@ -8,7 +8,6 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 
@@ -57,7 +56,7 @@ public class TestBlockingIO {
         socketChannel.close();
     }
 
-    //客户端
+    //服务端
     @Test
     public void testServer() throws IOException {
         //1、获取连接
