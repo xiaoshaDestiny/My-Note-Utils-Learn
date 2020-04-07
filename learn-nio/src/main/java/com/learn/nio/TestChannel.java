@@ -64,10 +64,6 @@ import java.util.SortedMap;
  */
 public class TestChannel {
 
-    @Test
-    public void test0(){
-
-    }
 
     @Test
     public void test06() throws CharacterCodingException {
