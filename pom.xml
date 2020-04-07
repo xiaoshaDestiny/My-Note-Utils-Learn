@@ -15,6 +15,7 @@
         <module>learn-jvm-system</module>
         <module>learn-activemq</module>
         <module>learn-design-pattern</module>
+        <module>learn-nio</module>
     </modules>
 
     <build>
