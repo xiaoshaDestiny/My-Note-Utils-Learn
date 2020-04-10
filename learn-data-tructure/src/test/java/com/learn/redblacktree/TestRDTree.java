@@ -12,29 +12,29 @@ public class TestRDTree {
 
     private void insertAndPrint(Integer key){
         tree.insert(key);
-        System.out.println("\n=-> æ’å…¥æ•°æ®"+key+"åï¼Œæ­¤æ—¶çº¢é»‘æ ‘çš„ä¿¡æ¯:");
+        System.out.println("\n=-> ²åÈëÊı¾İ"+key+"ºó£¬´ËÊ±ºìºÚÊ÷µÄĞÅÏ¢:");
         tree.print();
     }
 
     private void removeAndPrint(Integer key){
         tree.remove(key);
-        System.out.println("\n=-> åˆ é™¤æ•°æ®"+key+"åï¼Œæ­¤æ—¶çº¢é»‘æ ‘çš„ä¿¡æ¯:");
+        System.out.println("\n=-> É¾³ıÊı¾İ"+key+"ºó£¬´ËÊ±ºìºÚÊ÷µÄĞÅÏ¢:");
         tree.print();
     }
 
     private void searchAndPrint(Integer key){
-        System.out.print("\n ==->æŸ¥è¯¢"+key+"çš„ç»“æœæ˜¯ï¼š");
+        System.out.print("\n ==->²éÑ¯"+key+"µÄ½á¹ûÊÇ£º");
         RBTNode result = tree.search(key);
         System.out.println(result);
         if(tree.search(key) == null){
-            System.out.println("'æŸ¥è¯¢æ— æœï¼'");
+            System.out.println("'²éÑ¯ÎŞ¹û£¡'");
         }else{
             //RED == false    true == Black
             if(result.color == false){
-                System.out.println(" çº¢è‰²ï¼Œå·¦å­©å­æ˜¯"+result.left+" å³å­©å­æ˜¯"+result.right+" çˆ¶äº²ç³»èŠ‚ç‚¹æ˜¯"+result.parent);
+                System.out.println(" ºìÉ«£¬×óº¢×ÓÊÇ"+result.left+" ÓÒº¢×ÓÊÇ"+result.right+" ¸¸Ç×Ïµ½ÚµãÊÇ"+result.parent);
             }
             if(result.color == true){
-                System.out.println(" é»‘è‰²ï¼Œå·¦å­©å­æ˜¯"+result.left+" å³å­©å­æ˜¯"+result.right+" çˆ¶äº²ç³»èŠ‚ç‚¹æ˜¯"+result.parent);
+                System.out.println(" ºÚÉ«£¬×óº¢×ÓÊÇ"+result.left+" ÓÒº¢×ÓÊÇ"+result.right+" ¸¸Ç×Ïµ½ÚµãÊÇ"+result.parent);
             }
         }
     }
@@ -43,7 +43,7 @@ public class TestRDTree {
     @Test
     public void test01(){
 
-        //æµ‹è¯•æ’å…¥æ•°æ®ï¼š
+        //²âÊÔ²åÈëÊı¾İ£º
         insertAndPrint(20);
         insertAndPrint(26);
         insertAndPrint(18);
@@ -57,29 +57,29 @@ public class TestRDTree {
         insertAndPrint(61);
         System.out.println("\n========================================================================\n\n");
 
-        //æµ‹è¯•éå†
-        System.out.printf("\n=====---> å‰åºéå†: ");
+        //²âÊÔ±éÀú
+        System.out.printf("\n=====---> Ç°Ğò±éÀú: ");
         tree.preOrder();
-        System.out.printf("\n=====---> ä¸­åºéå†: ");
+        System.out.printf("\n=====---> ÖĞĞò±éÀú: ");
         tree.inOrder();
-        System.out.printf("\n=====---> ååºéå†: ");
+        System.out.printf("\n=====---> ºóĞò±éÀú: ");
         tree.postOrder();
         System.out.println("\n========================================================================\n\n");
 
-        //å¯»æ‰¾æœ€å¤§æœ€å°å€¼
-        System.out.printf("\n=====---> æœ€å°å€¼: %s\n", tree.minimum());
-        System.out.printf("=====---> æœ€å¤§å€¼: %s\n", tree.maximum());
+        //Ñ°ÕÒ×î´ó×îĞ¡Öµ
+        System.out.printf("\n=====---> ×îĞ¡Öµ: %s\n", tree.minimum());
+        System.out.printf("=====---> ×î´óÖµ: %s\n", tree.maximum());
         System.out.println("========================================================================\n\n");
 
 
-        //æµ‹è¯•åˆ é™¤æ•°æ®
+        //²âÊÔÉ¾³ıÊı¾İ
         removeAndPrint(22);
         removeAndPrint(46);
         removeAndPrint(20);
         System.out.println("========================================================================\n\n");
 
 
-        //æµ‹è¯•æŸ¥æ‰¾
+        //²âÊÔ²éÕÒ
         searchAndPrint(22);
         searchAndPrint(18);
         searchAndPrint(9);
