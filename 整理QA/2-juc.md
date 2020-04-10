@@ -281,7 +281,6 @@ AQS也允许独占锁和共享锁并存，也就是tryAcquire - tryRelease这一
 在这种锁中也实现了。比如说读写锁就是这样的。ReentrantReadWriteLock。  
     
 
-
 **Q:刚刚你说到了ReentrantLock和CountDownLatch这两个并发工具类，你能说说别的常用的并发工具类吗？**（就是要听知识掌握的宽度）  
 A:刚刚说的是实现思路，在用的时候一般是这几个CountDownLatch，CyclicBarrier，Semaphore。  
 CountDownLatch是一种倒计时锁，让某个线程阻塞，直到另外的一些线程完成之后才被唤醒。主要是await方法等待被唤醒，countDown在线程执行完任务之后把state减一。  
@@ -289,7 +288,6 @@ CyclicBarrier翻译过来叫循环屏障，就是所有线程都等待，直到�
 Semaphore 可以控制同时访问线程的个数acquired一个，release释放一个。一般用在多线程争抢资源的时候。  
 它设计的两个目的是：一、用于多个共享资源的互斥作用，还有就是并发线程的控制数。  
     
-
 
 **Q:阻塞队列能说说吗？**  
 A:BlockQueue,先进先出。  
