@@ -13,7 +13,6 @@ import java.util.Arrays;
 public class QuickSort {
     public static void main(String[] args) {
         int[] arr = {1,7,5,23,2,3};
-
         quickSort(arr,0,arr.length -1);
         System.out.println(Arrays.toString(arr));
 
@@ -79,6 +78,5 @@ public class QuickSort {
                 quickSort(arr,l,right);
             }
         }
-
     }
 }
