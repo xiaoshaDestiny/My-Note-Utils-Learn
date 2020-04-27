@@ -117,6 +117,13 @@ function numberCheck(value){
     return value;
 }
 
+//正整数规则检查
+function positiveIntegerRuleCheck(value){
+    value = value.replace(/[^\d]/g,"");//去掉所有不是数字的输入
+    value = value.replace(/^[0]+[0-9]*$/gi,"");//去掉是0开头的输入
+    return value;
+}
+
 
 //7、
 // layui 单击行选中radio
@@ -147,16 +154,6 @@ $(document).on("click",".layui-table-body table.layui-table tbody tr", function 
 $(document).on("click", "td div.laytable-cell-checkbox div.layui-form-checkbox", function (e) {
     e.stopPropagation();
 });
-
-
-//9
-//正整数规则检查
-function positiveIntegerRuleCheck(value){
-    value = value.replace(/[^\d]/g,"");//去掉所有不是数字的输入
-    value = value.replace(/^[0]+[0-9]*$/gi,"");//去掉是0开头的输入
-    return value;
-}
-
 
 
 //10
