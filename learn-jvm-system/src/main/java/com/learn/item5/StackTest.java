@@ -11,6 +11,9 @@ public class StackTest {
     public  void methodA(){
         int i = 10;
         int j = 20;
+        long a = 122L;
+        double b = 122.0000;
+        int k = 10;
         methodB();
     }
     public  void methodB(){
