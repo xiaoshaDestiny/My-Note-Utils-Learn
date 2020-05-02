@@ -333,7 +333,25 @@ ZGC的工作流程：
 它出世之时是JDK11时期，正好是Oracle调整许可授权，把商业特性都开源给了OpenJdk。遗憾的是还没有在正式的JDK版本中使用。  
     
 
+##### Epsilon收集器
+不会进行垃圾收集。
+收集器的工作除了收集垃圾之外，还负责堆内存的管理布局，对象分配，与解释器、编译器、监控系统协作等。  
+一个应用只需要运行数秒钟，Java虚拟机能正确分配内存、堆空间耗光时就退出，那Epsilon收集器就是最好的选择。  
 
+### 怎样选择垃圾收集器？
+影响答案的三个因素：
+(1) 应用的主要关注点是什么？科学计算，数据分析，那么吞吐量就是主要关注点。SLA应用，停顿时间直接影响到服务质量，延迟就是关注点。客户端或者嵌入式应用，内存占用就是关注点。  
+(2) 硬件条件
+(3) JDK的发行商
+(4) 如果系统跑在Windows上，无缘ZGC,只能尝试Shenandoah。
+(5) 硬件设施和jdk版本落后，根据内存规模可以衡量。如果是4-64GB CMS一般能处理好，如果堆内存比较大，可以尝试G1。
+
+### 垃圾收集日志
+在JDK9之前，没有统一的日志处理框架。JDK9之后，使用Xlog参数进行设置。
+查看GC基本信息：9之前使用参数 -XX:+PrintGC  9之后使用参数-Xlog:gc
+查看GC详细信息：9之前使用参数 -XX:+PrintGCDetails 9之后使用参数 -X-log:gc*
+查看GC前后堆、方法区可用容量变化：9之前 -XX:+PrintHeapAtGC 9之后-Xlog:gc+heap=debug
+查看GC过程中用户线程并发时间以及停顿时间：9之前 -XX:Print-GCApplicationConcurrentTime 和 -XX:PrintGCApplicationStoppedTime 9之后使用 -Xlog:safepoint
 
 
 
