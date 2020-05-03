@@ -347,11 +347,29 @@ ZGC的工作流程：
 (5) 硬件设施和jdk版本落后，根据内存规模可以衡量。如果是4-64GB CMS一般能处理好，如果堆内存比较大，可以尝试G1。
 
 ### 垃圾收集日志
-在JDK9之前，没有统一的日志处理框架。JDK9之后，使用Xlog参数进行设置。
-查看GC基本信息：9之前使用参数 -XX:+PrintGC  9之后使用参数-Xlog:gc
-查看GC详细信息：9之前使用参数 -XX:+PrintGCDetails 9之后使用参数 -X-log:gc*
-查看GC前后堆、方法区可用容量变化：9之前 -XX:+PrintHeapAtGC 9之后-Xlog:gc+heap=debug
-查看GC过程中用户线程并发时间以及停顿时间：9之前 -XX:Print-GCApplicationConcurrentTime 和 -XX:PrintGCApplicationStoppedTime 9之后使用 -Xlog:safepoint
+在JDK9之前，没有统一的日志处理框架。JDK9之后，使用Xlog参数进行设置。  
+查看GC基本信息：9之前使用参数 -XX:+PrintGC  9之后使用参数-Xlog:gc  
+查看GC详细信息：9之前使用参数 -XX:+PrintGCDetails 9之后使用参数 -X-log:gc*  
+查看GC前后堆、方法区可用容量变化：9之前 -XX:+PrintHeapAtGC 9之后-Xlog:gc+heap=debug  
+查看GC过程中用户线程并发时间以及停顿时间：9之前 -XX:Print-GCApplicationConcurrentTime 和 -XX:PrintGCApplicationStoppedTime 9之后使用 -Xlog:safepoint  
+
+
+### 内存分配与回收策略
+Java自动管理内存的目标就是：自动化的解决对象内存分配以及自动回收以及分配给对象的内存。  
+对象优先在伊甸园中分配，当空间不足够的时候，将发生一次MinerGC。在垃圾收集的过程中对象分配空间不足，又会触发担保机制，把对象分配到老年代中。   
+使用-XX:PretenureSizeThreshold参数，将大对象直接进入老年代，为了避免大对象在Eden和两个Survivor区间来回复制产生大量的内存复制操作。  
+长期存活的对象将进入老年代，在每一个对象的对象头中都记录了分代的年龄计数器。
+对象在Eden中诞生，经过了第一次MinerGC之后仍然存活就会被移动到Survivor区，对象年龄设置为1岁，对象在Survivor中每熬过一次MinerGC年龄就会加一，当年龄增加到15的时候，就会晋升到老年代中。（默认是15，这个阈值可以通过参数 -XX:MaxTenuringThreshold 调整）。  
+如果在Survivor空间中相同年龄的所有对象所占空间大小的总和 大于 整个Survivor区域空间的一般 无需等待15次，年龄大于等于这些的对象将会一起被送入老年代。这更加符合分代收集理论的假说。  
+
+**分配空间担保**  
+发生MinerGC之前，必须检查老年代最大可用连续空间是否 大于 新生代区域所有对象的总空间。大于则代表MinerGC是安全的，如果不大于也不允许分配担保，就会进行一次Full GC。
+如果允许分配担保，回去检查历史信息，看历次晋升老年代对象的平均大小 和 最大连续空间的大小，如果够，就进行这次有风险的MinerGC。
+如果这次风险尝试失败了，还是会进行一次Full GC。
+JDK6 之后对这个规则进行了改进：假如老年代的最大连续空间，大于新生代对象总大小 或者大于历次晋升的平均大小，就会进行MinerGC,否则进行FullGC。
+
+
+
 
 
 
