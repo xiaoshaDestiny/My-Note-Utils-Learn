@@ -368,6 +368,25 @@ Java自动管理内存的目标就是：自动化的解决对象内存分配以�
 如果这次风险尝试失败了，还是会进行一次Full GC。
 JDK6 之后对这个规则进行了改进：假如老年代的最大连续空间，大于新生代对象总大小 或者大于历次晋升的平均大小，就会进行MinerGC,否则进行FullGC。
 
+## 三、性能监控和故障处理工具 (自己动手，靠经验堆出来的)
+
+### 基础工具
+jps:列出正在运行的虚拟机进程，显示执行主类名称，和本地虚拟机唯一ID。    
+jstat: 显示本地或者远程虚拟机进程中的类加载，内存，垃圾收集，即时编译等运行时数据。 jstat -gc 10 2 每10毫秒查询一次，总共查询2次堆内存状况。    
+jinfo: 查看和调整虚拟机各项参数的值 jinfo -flag pid   也可以使用java -XX:+PrintFlagsFinal 查看默认参数  
+jmap: 用于生成堆转储快照。  在虚拟机发生内存溢出异常的时候自动生成堆转储快照文件 -XX:+HeapDumpOnOutOfMemoryError
+jmap还可以用来查询finalize执行队列，Java堆和方法区的详细信息，空间使用率，目前采用的是什么收集器等等。  
+jhat:虚拟机堆转储快照分析工具。生成一个微型的Http/web服务器，在浏览器上打开查看。不过一般不使用。  
+jstack:堆栈跟踪工具。生成当前时刻的线程快照
+
+### 可视化故障处理工具
+JDK提供的：JConsole,JHSDB,VirsualVM,JMC四个。  
+JConsole JDK5 免费    
+JHSDB JDK9  免费 java -cp .\sa-jdi.jar sun.jvm.hotspot.HSDB  
+VirsualVM JDK6 免费    
+JMC 配合飞行记录，付费
+
+
 
 
 
