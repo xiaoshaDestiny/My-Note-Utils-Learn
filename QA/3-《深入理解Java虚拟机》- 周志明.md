@@ -228,7 +228,7 @@ CMS是通过增量更新来做并发标记的。G1,Shenandoah则是使用原始�
 
 ### 经典的垃圾回收器
 ![avatar](https://github.com/xiaoshaDestiny/My-Note-Utils-Learn/raw/master/QA/image/GarbageCollectors.jpg)
-
+![Image](https://raw.githubusercontent.com/xiaoshaDestiny/My-Note-Utils-Learn/raw/master/QA/image/GarbageCollectors.jpg)
 **G1**
 Garbage First垃圾收集器技术历史上的里程碑，收集器面向局部收集的设计思路和基于Rigion的内存布局。  
 面向服务端应用。设计的目标是将垃圾收集的时间不超过N毫秒。  
