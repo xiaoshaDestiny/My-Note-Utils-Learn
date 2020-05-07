@@ -5,16 +5,21 @@ package com.learn.item1;
  * @create 2020-01-22 22:22
  */
 public class StringTest {
-    public static void print(StringBuffer sb){
-        System.out.println(sb);
+    private static StringBuffer sb = new StringBuffer();
 
+    public static void print(StringBuffer sb){
+        sb.append("***");
+        System.out.println(sb.toString());
     }
     public static void main(String[] args) {
-        synchronized (new Object()){
-            StringBuffer sb = new StringBuffer();
-            sb.append("1");
-            sb.append("2");
-            sb.append("3");
+
+        synchronized (sb){
+            sb.append("a");
+            print(sb);
+            sb.append("b");
+            print(sb);
+            sb.append("c");
+            print(sb);
         }
     }
 }
