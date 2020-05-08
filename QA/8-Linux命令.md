@@ -1,6 +1,77 @@
 # Linux高级命令
+1、**整体性能监控 top**。内存，磁盘，网络等等。load average负载均衡，一分钟五分钟十五分钟系统的平均负载值，加起来除以三，超过60%，就说明压力重。  
+```
+top
+```
+2、**CPU压力监控** vmstat -n 3 2，采样2次，每次间隔3秒钟。  
+输出列表中，us代表用户进程的CPU消耗，sy代表系统本身线程的消耗。  
+id标识处于空闲CPU，wa标识等待io的CPU，st标识来自于一个虚拟机偷取的CPU时间。  
+mpstat -P ALL 查看所有CPU核的信息，也可以采样 mpstat -P ALL 2 2
+````
+vmstat -n 3 2
+mpstat -P ALL 2 2
+````
+3、**内存**。free -m 以MB为单位查看系统整体的内存使用情况， free -g 以GB为单位。
+```
+free
+free -m 
+free -g
+```
+4、**磁盘存储**。
+```
+#显示存储空间大小
+df -h
 
+#人性化显示各存储空间大小
+df -ah
 
+#显示所有存储系统空间使用情况,同时显示存储系统的文件系统类型
+df -aT
+
+#查看本地文件，不显示网络磁盘
+df -ahlT
+
+#显示当前文件夹的空间使用情况
+du -sh
+
+#查看/home文件夹的空间使用情况
+du -h --max-depth=1 /home
+
+#看当前文件及文件中包含的子文件夹大小
+du -ch
+
+#查看某个文件容量大小
+du -h file.txt
+
+#查看多个文件容量大小
+du -h file1.txt file2.txt 
+```
+5、**磁盘IO监控** iostat -xdk 2 3 两秒一次，总共采样3次.  
+rkB/s 每秒读取数据量KB  
+wkB/s 每秒写入数据量KB
+svctm IO请求的平均服务时间 毫秒
+await IO请求的平均等待时间 毫秒
+util 一秒内处理IO请求的时间占比，接近100代表IO带宽打满。await远高于svctm代表IO等待队列太长。
+
+```
+[root@tool ~]# iostat -xdk 2 3
+Linux 2.6.32-642.el6.x86_64 (tool) 	2020年05月08日 	_x86_64_	(8 CPU)
+
+Device:         rrqm/s   wrqm/s     r/s     w/s    rkB/s    wkB/s avgrq-sz avgqu-sz   await r_await w_await  svctm  %util
+sda               1.83     6.84    4.55    0.83   127.86    30.65    58.94     0.09   16.67    8.01   64.37   3.83   2.06
+
+Device:         rrqm/s   wrqm/s     r/s     w/s    rkB/s    wkB/s avgrq-sz avgqu-sz   await r_await w_await  svctm  %util
+sda               0.00     0.00    0.50    0.00     4.00     0.00    16.00     0.01   10.00   10.00    0.00  10.00   0.50
+
+Device:         rrqm/s   wrqm/s     r/s     w/s    rkB/s    wkB/s avgrq-sz avgqu-sz   await r_await w_await  svctm  %util
+sda               0.00     0.00    0.00    0.00     0.00     0.00     0.00     0.00    0.00    0.00    0.00   0.00   0.00
+
+```
+
+6、**网络IO** ifstat 1 各个网卡的in out(没有需要下载)
+```
+ifstat 1
+```
 
 
 
@@ -78,16 +149,7 @@ yum install telnet
 》查看内存大小的详细信息：cat /proc/meminfo
 
 》查看磁盘以及分区情况
-df -h 显示存储空间大小
-df -ah 人性化显示各存储空间大小
-df -aT 显示所有存储系统空间使用情况,同时显示存储系统的文件系统类型
-df -ahlT 查看本地文件，不显示网络磁盘
 
-du -sh 显示当前文件夹的空间使用情况
-du -h --max-depth=1 /home //查看home文件夹的空间使用情况
-du -ch 看当前文件及文件中包含的子文件夹大小
-du -h test1.txt 查看某个文件容量大小
-du -h test1.txt test2.txt 查看多个文件容量大小
 
 
 》查看和修改Linux的时间
