@@ -6,12 +6,12 @@ top
 2、**CPU压力监控** vmstat -n 3 2，采样2次，每次间隔3秒钟。  
 输出列表中，us代表用户进程的CPU消耗，sy代表系统本身线程的消耗。  
 id标识处于空闲CPU，wa标识等待io的CPU，st标识来自于一个虚拟机偷取的CPU时间。  
-mpstat -P ALL 查看所有CPU核的信息，也可以采样 mpstat -P ALL 2 2
+mpstat -P ALL 查看所有CPU核的信息，也可以采样 mpstat -P ALL 2 2  
 ````
 vmstat -n 3 2
 mpstat -P ALL 2 2
 ````
-3、**内存**。free -m 以MB为单位查看系统整体的内存使用情况， free -g 以GB为单位。
+3、**内存**。free -m 以MB为单位查看系统整体的内存使用情况， free -g 以GB为单位。  
 ```
 free
 free -m 
@@ -48,10 +48,10 @@ du -h file1.txt file2.txt
 ```
 5、**磁盘IO监控** iostat -xdk 2 3 两秒一次，总共采样3次.  
 rkB/s 每秒读取数据量KB  
-wkB/s 每秒写入数据量KB
-svctm IO请求的平均服务时间 毫秒
-await IO请求的平均等待时间 毫秒
-util 一秒内处理IO请求的时间占比，接近100代表IO带宽打满。await远高于svctm代表IO等待队列太长。
+wkB/s 每秒写入数据量KB  
+svctm IO请求的平均服务时间 毫秒  
+await IO请求的平均等待时间 毫秒  
+util 一秒内处理IO请求的时间占比，接近100代表IO带宽打满。await远高于svctm代表IO等待队列太长。  
 
 ```
 [root@tool ~]# iostat -xdk 2 3
