@@ -87,6 +87,53 @@ finishBeanFactoryInitialization(beanFactory);这里会负责初始化所有的si
 不过这个要看是不是设置了懒加载，设置了懒加载会在用户第一次像IOC获取Bean的时候触发。
 
 
+### 循环引用
+循环引用指的是一种强引用关系，也就是在一个类里面有另一个类的引用作为属性。单例模式下，Spring能够解决循环引用的问题。多例环境中是不支持的。
+循环依赖发生在对象创建之后，为对象的属性注入的环节，也就是常说的DI(依赖注入)。
+所以要从对象的创建说起。
+
+循环加载每一个resource文件，也就是xml配置文件，转化为一个Document对象之后，就分析每一组标签。<mvc><context>这些，当然最重要是<bean>标签。  
+<bean>标签解析的最终结果会形成一个BeanDefinition对象，这个对象描述了非常详细的bean属性，class文件，是否懒加载，是不是有父类，有哪些属性，等等很详细的信息。
+并且解析完成之后会把这个BeanDefinition放到BeanDefinitionMap中去。这个过程叫做注册，所以这个BeanDefinitionMap就会持有所有Bean的信息。
+所以只要用这个Map用反射去创建Bean就好了。在创建的时候看看有没有配置Spring的扩展，有的话就去调用扩展方法。没有的话就去调用Bean中默认的无参数的构造方法，放到Spring的IOC容器中。
+
+beanFactory的BeanDefinitionList记录了Bean的id的顺序，跟配置文件中的是一致的。  
+单例模式下，是先创建对象，再去对属性依赖注入。多例模式下是创建bean的时候就要对bean的属性进行赋值，所以会出现循环依赖。
+
+创建Bean的条件：懒加载，不是抽象类，并且是单例。最后会走到一个doGetBean方法。
+校验id是不是重复了，重复了会换成别名。
+然后去getSingletons，SingletonObject就是IOC容器。
+
+在创建之前会去判断对选哪个是否正在创建，如果需要创建的对象不再IOC容器中，就去把接下来要创建的对象加到马上将要创建的集合中。singletonsCurrentlyInCreation.  
+然后在doCreateBean中去创建bean。
+创建成功之后，这个对象只是一个Java对象，还没有称为一个SpringIOC容器中的对象。
+之后会调用addSingletonFactory，如果IOC容器中没有这个id的Bean。
+this.singletonFactories.put(beanName, singletonFactory); 这个集合就是三级缓存
+this.earlySingletonObjects.remove(beanName);
+this.registeredSingletons.add(beanName);
+
+刚开始创建A对象，A对象创建完毕就会放到三级缓存中。在设置属性依赖的时候，发现需要B对象，这时候它首先尝试从IOC容器中获取这个对象，获取不到再去尝试从三级缓存中获取
+三级缓存中也没有才会去创建B对象，B对象创建完成之后他会把B放到三级缓存中。B需要A作为属性依赖，IOC容器中此时还没有A对象，但是三级缓存中已经有了。就能解决B的属性依赖是A。
+到这里，B对象创建完毕，放到了IOC容器中，也就是A的属性设置完毕，也会把A放到IOC容器中。
+
+
+### 如何关闭循环依赖
+Bean对象在创建时候的条件是三个，1、是否是单例，这个不能动。2、对象是不是在将要创建的集合中，这个也是不能动的。只能改第3个参数，是否支持循环依赖，Spring默认是支持的。
+关闭这个参数需要在创建的时候不去传递配置文件，这样就不会有Bean被创建。  
+然后通过context对象去关闭循环依赖、传递配置文件。最后手动调用一下refresh方法。
+
+### 对象的创建过程
+
+
+
+
+
+
+
+
+
+
+
 
 
 
