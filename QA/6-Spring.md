@@ -1,8 +1,8 @@
-**什么第Spring?**  
+### Q:什么是Spring?
 Spring是一个很全面的应用开发框架，从发布以来社区就很活跃，结合它强大的社区，发展到今天，已经是一个很成熟的Java一站式应用开发解决方案。
 轻量级、与业务的解耦、与其他框架无缝整合是它的特点。
 
-**常用模块，常用注解**  
+### Q:常用模块?
 Spring Core:提供IOC容器，对Bean进行管理。    
 Spring Context：继承BeanFactory，提供山下文信息。  
 Spring Dao:对JDBC数据库查询的支持，提供事务支持。  
@@ -10,33 +10,73 @@ Spring ORM：提供对JPA,Hibernate,MyBatis等ORM映射的支持。
 Spring AOP:代理通知的支持。  
 Spring Web\MCV：提供对web开发的支持。  
 
-**Q:说一说Spring Bean的作用域**  
+### Q:说一说Spring Bean的作用域? 
 Singleton单例,容器中只存在一个Bean  
 prototype原型,每次使用的时候，容器都将创建一个Bean实例  
 request,一次request请求创建一个实例  
-session,一次http session创建一个实例  
-  
-**Q: 说一说SpringBean生命周期**  
-A: 
+session,一次http session创建一个实例 
+application,全局作用域。跟单例不一样，一个应用可以有多个ApplicationContext  
+
+### Q:说一说SpringBean生命周期? 
 从配置文件读取Bean的定义，实例化Bean对象  
 设置对象的属性
 注入Aware接口，也就是这个bean依赖的其他能在ioc里面找到的bean属性 
 执行BeanPostProcessor，自定义的处理（分前置处理和后置处理）  
 执行Bean自定义的初始化方法   
 Bean对象创建完毕，之后就是使用。  
-销毁的时候是执行destroy方法然后去执行自定义的销毁方法。 
+销毁的时候是执行destroy方法然后去执行自定义的销毁方法。  
+
+https://javadoop.com/post/spring-ioc   
+
+### Q:说一说IOC原理。  
+IOC,在应用中将创建对象的权利完全交给Spring去处理，因为在项目中需要用到的服务类有很多，在实例化的时候如果都要去了解这些类的构造方法是什么样的，创建规则是怎么样的，是很头疼的事情。  
+而Spring就预先将这些会用到的类通过xml配置文件的形式去描述Bean和Bean之间的关系，在使用到的地方，只需要引入就可以使用了。  
+开始的时候是使用xml配置的形式，后来SpringBoot成为主流之后，基于注解的Bean配置就开始流行起来。   
+一般情况下，IOC其实说的是一个 singletonObjects 的Map对象，也称为一级缓存，里面放置的是实例化好的单例对象。  
+扫描到的bean配置信息，会生成一个Bean配置的注册表信息，叫BeanDefinitionMap。  
+Spring就拿着这份注册表，通过Java语言的反射机制去实例化Bean,还解决了这些Bean之间的依赖关系，创建一个基本的可运行环境这是IOC容器最核心的出发点。   
+但Spring在完成这些底层Bean创建的工作之后，还提供了bean实例的缓存、生命周期的管理等高级的服务,减轻了很多开发量,也就让Spring社区的开发慢慢成为Java开发的主流分支。  
+因为他很好的解决了Bean创建这些对象信息，很多框架在写的时候，首要考虑的就是都能被Spring所整合管理。  
+
+### Q:说一说IOC容器的创建过程，能说多少说多少。（考察源码的熟悉程度）  
+首先是将xml配置文件全部扫描到,生成一个配置文件资源的数组。当然不管是xml形式还是SpringBoot注解形式最后都会在refresh()方法里面去完成IOC的创建。  
+然后检查是否已经存在一个BeanFactory,有就销毁重新创建一个BeanFactory,而这个BeanFactory里面将存放一个重要的信息，BeanDefinitionMap,初始化IOC容器也就将围绕着它来进行。  
+加载Bean进入BeanFactory的过程大致是这样的，首先去遍历每一个Resource文件，也就是xml描述文件,生成一个个的document文档对象，然后解析各个标签。像<mvc><context>这些。  
+当然还有bean标签，也就是解析bean，解析后的数据生成一个个的BeanDefinition，里面保存了Bean的重要信息，  
+比如这个Bean指向的是哪个类、是否是单例的、是否懒加载、这个Bean依赖了哪些Bean，name属性的定义按照 “逗号、分号、空格” 切分，形成一个别名列表数组。  
+后面一步是解决id和别名，没有指定id会默认取这个别名数组的第一个元素，没有id和name就把beanClassName设置为Bean的别名。   
+完成这个步骤之后是注册，就是把这个BeanDefinition放到BeanDefinitionMap里面。  
+到这里的话应该说BeanFactory已经创建完成。   
+  
+假如配置了懒加载的话，到这里其实已经完成了IOC创建，但是实际中是不配置懒加载的。懒加载就是用到再去创建，比较麻烦。    
+所以Spring很智能的帮我们把所有单例的对象都在创建BeanFactory完成之后去创建好，最终会放到singletonObjects中。  
+这一步要解决的核心问题就是循环依赖。  
+刚刚已经说了，所有的Bean都会注册到BeanDefinitionMap中，所以只要用反射就可以完成对象的创建工作，但是创建出来的对象只是一个Java对象，还没有被SpringIOC容器管理。  
+  
+接下来创建对象的过程大致如下：  
+1、检查一级缓存singletonObjects有没有这个对象了，没有检查二级缓存earlySingletonObjects。   
+一级缓存存放的是所有已经创建好的对象，二级缓存存放的是正在创建的对象，这些对象提前已经曝光了，三级缓存存放的是创建对象的对象工厂。  
+2、二级缓存也没有，就用反射创建对象，把对象放到二级缓存中，标注这个对象正在创建。  
+3、为新建的bean设置属性，设置属性的时候这个对象先放到三级缓存singletonFactories里面去。  
+假设这个时候A的属性是B对象，B的属性是A对象，B创建完成之后发现设置属性的时候，在一级缓存中没有，但是在三级缓存中有，  
+即使A的属性还没填充完整，但是A依赖的引用值已经提前知道了，从这里就解决了循环依赖的问题。    
+创建了之后，对象加到一级缓存，从二级缓存中删除。  
+能被加到三级缓存singletonFactory的前提是这个对象执行了构造方法，所以使用构造器依赖的场景下，Spring是没办法帮我们搞定的。  
+当然也有解决办法，就是使用@Lazy注解标识这个对象懒加载，当首次使用的时候再去创建这个对象。  
+
+
+
+
+
+
+
+
+
 
 
 
 ### IOC 原理 创建过程
-https://javadoop.com/post/spring-ioc  
-**IOC原理**   
-将程序中，创建Bean的过程交给Spring去处理，因为在项目中需要用到的服务类有很多，在实例化的时候如果都要去了解这些类的构造方法是什么样的，创建规则是怎么样的，是很头疼的事情。  
-而Spring就预先将这些会用到的类通过配置文件的形式去去描述Bean和Bean之间的关系，在用到的地方引用即可。开始的时候是使用xml配置的形式，后来SpringBoot成为主流之后，基于注解的Bean配置就开始流行起来。  
-IOC其实就是一个Map,存放的就是各种对象。Spring通过Java语言的反射机制去实例化Bean,并且建立了这些Bean之间的依赖关系，这是IOC容器最核心的出发点。  
-但IOC在完成这些底层Bean创建的工作之后，还提供了bean实例的缓存、生命周期的管理等高级的服务。减轻了很多开发量。  
-xml文件中的Bean配置信息，会在Spring容器中生成一份相应的Bean配置注册表，根据这个注册表就可以完成Bean的实例化，并且完成Bean之间的依赖关系，为应用提供一个准备就绪的基本运行环境。    
-
+ 
 **启动**  
 启动IOC容器是通过 ClassPathXmlApplicationContext根据类路径下的xml文件内容来构建 ApplicationContext这个对象就是我们的IOC容器了。
 当然还有其他的方案去构建这个ApplicationContext。FileSystemXmlApplication从文件系统上获取、AnnotationConfigApplicationContext基于注解来配置等。  

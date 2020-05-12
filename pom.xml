@@ -16,6 +16,7 @@
         <module>learn-activemq</module>
         <module>learn-design-pattern</module>
         <module>learn-nio</module>
+        <module>learn-spring-debug</module>
     </modules>
 
     <build>
