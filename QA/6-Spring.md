@@ -81,13 +81,14 @@ JDK的动态代理使用Proxy.newProxyInstance()方法去代理对象，然后�
 而Cjlib的动态代理是去继承代理类，实现所有非final的方法，然后就可以在子类中拦截父类方法的调用，拦截之后就织入拦截的代码。
 
 ### 说一说SpringMVC的处理流程
-
-
-
-
-
-
-
+用户的Request请求首先会到前端控制器DispatcherServlet进行分析处理，然后到RequestMapping中去寻找对应的映射。
+假如不存在对应的映射会去看是不是配置了静态资源,如果没配或者找不到那就返回404。
+如果RequestMapping中有对应的映射，接着会放到一个HandlerExecutionChain异常链中,
+然后调用拦截器的前置方法，接着再去执行Controller里面的逻辑，最后会得到一个ModelAndView对象
+然后调用拦截器的后置方法可以对得到的结果进行修改。
+假如这个过程中存在异常，会使用异常处理组件得到一个新的ModelAndView对象，没有就返回正确的ModelAndVoew对象。
+然后调用ViewResolver组件去解析这个ModelAndViwe得到实际的View
+然后是是渲染视图，调用拦截器的afterCompletion方法释放资源，结束。
 
 
 <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
