@@ -102,6 +102,9 @@ Spring为应用提供了一个基本的可运行环境，SpringMVC提供的是�
 主启动类上标注了@SpringBootApplication注解，SpringApplication.run()方法执行之后，其实后面会有一个@EnableAutoConfiguration注解，  
 就会扫描classpath下面所有的配置项，通过反射实例化IOC容器的配置类，然后汇总为一个并加载到IoC容器，所以能直接用web,mysql连接这些bean对象。
 
+### Q:Spring的IOC注入方式
+接口注入，setter注入，构造器注入，注解注入
+
 
 
 
