@@ -2,7 +2,6 @@ package com.learn;
 
 /**
  * @author xu.rb
- * @description: TODO
  * @since 2020-05-12 16:55
  */
 public class A {
