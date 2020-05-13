@@ -53,7 +53,7 @@ Spring就拿着这份注册表，通过Java语言的反射机制去实例化Bean
 这一步要解决的核心问题就是循环依赖。  
 刚刚已经说了，所有的Bean都会注册到BeanDefinitionMap中，所以只要用反射就可以完成对象的创建工作，但是创建出来的对象只是一个Java对象，还没有被SpringIOC容器管理。  
   
-接下来创建对象的过程大致如下：  
+接下来创建对象的过程大致如下：   
 1、检查一级缓存singletonObjects有没有这个对象了，没有检查二级缓存earlySingletonObjects。   
 一级缓存存放的是所有已经创建好的对象，二级缓存存放的是正在创建的对象，这些对象提前已经曝光了，三级缓存存放的是创建对象的对象工厂。  
 2、二级缓存也没有，就用反射创建对象，把对象放到二级缓存中，标注这个对象正在创建。  
@@ -64,37 +64,89 @@ Spring就拿着这份注册表，通过Java语言的反射机制去实例化Bean
 能被加到三级缓存singletonFactory的前提是这个对象执行了构造方法，所以使用构造器依赖的场景下，Spring是没办法帮我们搞定的。  
 当然也有解决办法，就是使用@Lazy注解标识这个对象懒加载，当首次使用的时候再去创建这个对象。  
 
-### 如何关闭循环依赖
-Bean对象在创建时候的条件是三个，1、是否是单例，这个不能动。2、对象是不是在将要创建的集合中，这个也是不能动的。只能改第3个参数，是否支持循环依赖，Spring默认是支持的。
-关闭这个参数需要在创建的时候不去传递配置文件，这样就不会有Bean被创建。  
-然后通过context对象去关闭循环依赖、传递配置文件。最后手动调用一下refresh方法。
+### Q:如何关闭循环依赖
+Bean对象在创建时候的条件是三个。  
+1、是否是单例，这个不能动。  
+2、对象是不是在将要创建的集合中，这个也是不能动的。  
+只能改第3个参数，是否支持循环依赖，Spring默认是支持的。  
+关闭这个参数需要在创建的时候不去传递配置文件，这样就不会有Bean被创建。    
+然后通过context对象去关闭循环依赖、传递配置文件。最后手动调用一下refresh方法。  
 
-### 对象的创建过程
+### Q:对象的创建过程
 实例化Spring容器 -> 扫描bean配置 -> 解析Bean配置 -> beanDefinition  put map -> bean工厂的后置处理器 -> 验证(单例 懒加载 beanName合法) -> 推断构造方法 -> 反射生成对象 
 -> 缓存注解信息  -> 注入属性 -> 回调Aware接口 -> 调用生命周期的回调方法 -> 完成代理aop -> put进入单例池 容器 -> 销毁
 
-### 说一说Spring的AOP
+### Q:说一说Spring的AOP
 AOP就是在运行期间，动态的将某一段代码切入到指定方法的指定位置进行运行的编程方法，对比之前自顶向下的编程方式，就有了很好的扩展性。
 把业务逻辑和横切的问题进行分离，解耦，提高代码的重用性。一些经典的应用场景就是，记录日志、监控性能、权限控制、事务管理。
 Spring 默认使用的是JDK提供的动态代理技术， 在需要代理的类不是代理接口的时候，Spring会自动切换成Cjlib的代理。
 JDK的动态代理使用Proxy.newProxyInstance()方法去代理对象，然后通过反射invoke去调用真实的对象方法。
 而Cjlib的动态代理是去继承代理类，实现所有非final的方法，然后就可以在子类中拦截父类方法的调用，拦截之后就织入拦截的代码。
 
-### 说一说SpringMVC的处理流程
-用户的Request请求首先会到前端控制器DispatcherServlet进行分析处理，然后到RequestMapping中去寻找对应的映射。
-假如不存在对应的映射会去看是不是配置了静态资源,如果没配或者找不到那就返回404。
-如果RequestMapping中有对应的映射，接着会放到一个HandlerExecutionChain异常链中,
-然后调用拦截器的前置方法，接着再去执行Controller里面的逻辑，最后会得到一个ModelAndView对象
-然后调用拦截器的后置方法可以对得到的结果进行修改。
-假如这个过程中存在异常，会使用异常处理组件得到一个新的ModelAndView对象，没有就返回正确的ModelAndVoew对象。
-然后调用ViewResolver组件去解析这个ModelAndViwe得到实际的View
-然后是是渲染视图，调用拦截器的afterCompletion方法释放资源，结束。
+### Q:说一说SpringMVC的处理流程
+用户的Request请求首先会到前端控制器DispatcherServlet进行分析处理，然后到RequestMapping中去寻找对应的映射。  
+假如不存在对应的映射会去看是不是配置了静态资源,如果没配或者找不到那就返回404。  
+如果RequestMapping中有对应的映射，接着会放到一个HandlerExecutionChain异常链中,  
+然后调用拦截器的前置方法，接着再去执行Controller里面的逻辑，最后会得到一个ModelAndView对象  
+然后调用拦截器的后置方法可以对得到的结果进行修改。  
+假如这个过程中存在异常，会使用异常处理组件得到一个新的ModelAndView对象，没有就返回正确的ModelAndVoew对象。  
+然后调用ViewResolver组件去解析这个ModelAndViwe得到实际的View  
+然后是是渲染视图，调用拦截器的afterCompletion方法释放资源，结束。  
+
+### Q:说一说Spring,SpringMVC，SpringBoot
+Spring为应用提供了一个基本的可运行环境，SpringMVC提供的是一个Web层次的MVC框架去处理用户请求，他们都有很多的配置文件需要编写。
+并且在构建、运行、调试、部署的时候都比较麻烦，SpringBoot则是提供了一个快速整合项目需要的构建方案，这些组件提供starter依赖的形式构建进入项目中，摒弃了xml配置文件的形式，基本都是基于注解的形式去构建。
+只需要在yml文件中配置少量的信息即可。
+
+### Q:SpringBoot在启动时候干了什么？（细节很多，各种listener）
+主启动类上标注了@SpringBootApplication注解，SpringApplication.run()方法执行之后，其实后面会有一个@EnableAutoConfiguration注解，  
+就会扫描classpath下面所有的配置项，通过反射实例化IOC容器的配置类，然后汇总为一个并加载到IoC容器，所以能直接用web,mysql连接这些bean对象。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
 <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
 ### IOC 原理 创建过程
- 
 **启动**  
 启动IOC容器是通过 ClassPathXmlApplicationContext根据类路径下的xml文件内容来构建 ApplicationContext这个对象就是我们的IOC容器了。
 当然还有其他的方案去构建这个ApplicationContext。FileSystemXmlApplication从文件系统上获取、AnnotationConfigApplicationContext基于注解来配置等。  
