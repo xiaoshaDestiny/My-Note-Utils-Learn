@@ -33,6 +33,7 @@ public class BIOServer {
             byte[] bytes = new byte[1024];
             InputStream inputStream = socket.getInputStream();
             while(true){
+                System.out.println(Thread.currentThread().getName());
                 int read = inputStream.read(bytes);
                 if(read != -1) {
                     System.out.print(new String(bytes,0,read));
