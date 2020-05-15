@@ -17,6 +17,7 @@
         <module>learn-design-pattern</module>
         <module>learn-nio</module>
         <module>learn-spring-debug</module>
+        <module>learn-netty</module>
     </modules>
 
     <build>
