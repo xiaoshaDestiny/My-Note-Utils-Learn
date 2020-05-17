@@ -24,6 +24,8 @@ rewind()  重复读取
 clear()   清空缓冲区  但是缓冲区中的数据还在 处于被遗忘状态  
 mark() 标记当前position的位置  
 reset() 恢复到mark位置  
+transferFrom() 复制目标通道的数据到当前通道
+
 
 
 三大核心部分：管道Channel、缓冲区Buffer和Selector选择器。面向缓冲区的，数据读取到一个它稍后处理的缓冲区，需要时可以在缓冲区前后移动，增加了处理过程的灵活性。
@@ -45,6 +47,16 @@ mark:    标记，表示记录当前position的位置，可以通过reset()恢�
 通道可以同时进行读写操作，但是流只能读或者写。通道可以实现异步读写数据  
 BIO的Stream流是单向的，NIO的Channel是双向的  
 Channel是一个接口，主要的实现子类有FinalChannel 文件数据读写\DatagramChannel UDP数据读写\ServerSocketChannel和SocketChannel 用于TCP数据读写  
+ByteBuffer支持类型化的put和get,但是put和get的类型要匹配   
+可以将普通Buffer变成只读Buffer  
+NIO还提供了MappedByteBuffer，可以让文件直接在内存中进行修改  
+NIO还支持多个Buffer完成读写操作，Scattering 和 Gathering 分散聚合：
+Scattering：将数据写入到buffer的时候，可以采用Buffer数组[分散] 
+Gathering：从buffer读取数据的时候，可以采用Buffer数组的方式[聚合]
+
+
+  
+
 
 
 
