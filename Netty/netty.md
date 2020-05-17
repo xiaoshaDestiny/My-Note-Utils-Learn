@@ -66,7 +66,26 @@ selectedKeys 从集合内部得到所有的selectionKey
 将socketChannel注册到Selector上，一个Selector可以注册多个SocketChannel  
 注册之后返回一个SelectionKey，会跟这个Selector关联  
 Selector就会进行监听select方法，返回有事件发生的通道的个数，然后获取到各个有事件发生的SelectionKey  
-这个SelectionKey就能得到了发生事件的Channel,通过Channel就能得到业务的处理   
+这个SelectionKey就能得到了发生事件的Channel,通过Channel就能得到业务的处理  
+
+#### 零拷贝
+零拷贝指的是没有CPU参与的拷贝。零拷贝是网络编程的关键，跟多性能优化都离不开。  
+Java程序中，主要的常用的零拷贝有内存映射(mmap)和sendFile。  
+传统的IO要进行至少4次拷贝，3次系统状态的切换。很耗费性能。
+mmap通过内存映射，将文件映射到内核缓冲区，同时用户空间可以共享内核空间的数据，这样，在进行网络传输的时候，就可以减少内核空间到用户控件的拷贝次数。  
+在Linux2.1版本提供了sendFile函数，数据根本不需要进过用户态，直接从内核缓冲区进入到SocketBuffer，同时由于和用户态完全无关，就减少了一次上下文的切换。  
+(1)零拷贝值，是从操作系统角度来说的，因为内核缓冲区之间，没有数据是重复的，只有kernel buffer有一份数据。
+(2)零拷贝不仅仅带来更少的数据复制还能减少上下文切换，CPU缓存伪共享问题等。  
+mmap适合少量的数据嘟咧，sendFile适合大文件传输。mmap需要进过4次上下文的切换，3次数据拷贝。
+sendFile需要3次上下文切换，最少需要2次数据拷贝。
+sendFile可以利用DMA方式，减少CPU拷贝，mmap则不能，必须从内核拷贝到Socket缓冲区。  
+
+#### 原生NIO存在的问题
+
+
+
+
+
 
 
 
