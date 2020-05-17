@@ -18,13 +18,35 @@
 capacity()方法，返回缓冲区容量  
 put()方法，添加数据到缓冲区  
 hasRemaining()方法，缓冲区是否还有数据  
-get()方法，获取缓冲区中的数据，一个一个的读 
+get()方法，获取缓冲区中的数据，一个一个的读  
+flip()    切换到读取数据模式  
+rewind()  重复读取  
+clear()   清空缓冲区  但是缓冲区中的数据还在 处于被遗忘状态  
+mark() 标记当前position的位置  
+reset() 恢复到mark位置  
+
 
 三大核心部分：管道Channel、缓冲区Buffer和Selector选择器。面向缓冲区的，数据读取到一个它稍后处理的缓冲区，需要时可以在缓冲区前后移动，增加了处理过程的灵活性。
 每一个Channel都会对应着一个Buffer,Selector对应一个线程，一个线程对应多个Channel，程序切换到哪一个Channel是有事件决定的。Selector会根据不同的事件，在各个通道上切换。
 Buffer是一个内存块，底层是一个数组，数据的写入是通过Buffer，需要通过flip去切换输入输出，Buffer是双向的。BIO则需要指定输入流或者是输出流。  
 
 #### Buffer
+缓冲区的本质是一个可以读写数据的内存块，可以理解成是一个含有数组的容器对象，并且提供了一组方法，可以对缓冲区数据进行操作。  
+根据数据类型的不同，提供了相应类型的缓冲区，boolean类型除外  
+ByteBuffer\CharBuffer\ShortBuffer......通过allocate()获取缓冲区  
+
+capacity 容量，缓冲区中最大存储数据的容量，创建缓冲区的时候被设定并且不可以改变   
+limit    界限，缓冲区中可以操作数据的大小 limit后面的数据时不能进行读写的 
+position 位置，缓冲区中正在操作数据的位置
+mark:    标记，表示记录当前position的位置，可以通过reset()恢复到mark位置
+大小关系： 0 <= mark <= position <= limit <= capacity
+
+#### Channel
+通道可以同时进行读写操作，但是流只能读或者写。通道可以实现异步读写数据  
+BIO的Stream流是单向的，NIO的Channel是双向的  
+Channel是一个接口，主要的实现子类有FinalChannel 文件数据读写\DatagramChannel UDP数据读写\ServerSocketChannel和SocketChannel 用于TCP数据读写  
+
+
 
 
 
