@@ -24,7 +24,7 @@ rewind()  重复读取
 clear()   清空缓冲区  但是缓冲区中的数据还在 处于被遗忘状态  
 mark() 标记当前position的位置  
 reset() 恢复到mark位置  
-transferFrom() 复制目标通道的数据到当前通道
+transferFrom() 复制目标通道的数据到当前通道  
 
 
 
@@ -32,27 +32,33 @@ transferFrom() 复制目标通道的数据到当前通道
 每一个Channel都会对应着一个Buffer,Selector对应一个线程，一个线程对应多个Channel，程序切换到哪一个Channel是有事件决定的。Selector会根据不同的事件，在各个通道上切换。
 Buffer是一个内存块，底层是一个数组，数据的写入是通过Buffer，需要通过flip去切换输入输出，Buffer是双向的。BIO则需要指定输入流或者是输出流。  
 
-#### Buffer
+#### Buffer缓冲区
 缓冲区的本质是一个可以读写数据的内存块，可以理解成是一个含有数组的容器对象，并且提供了一组方法，可以对缓冲区数据进行操作。  
 根据数据类型的不同，提供了相应类型的缓冲区，boolean类型除外  
 ByteBuffer\CharBuffer\ShortBuffer......通过allocate()获取缓冲区  
 
 capacity 容量，缓冲区中最大存储数据的容量，创建缓冲区的时候被设定并且不可以改变   
 limit    界限，缓冲区中可以操作数据的大小 limit后面的数据时不能进行读写的 
-position 位置，缓冲区中正在操作数据的位置
-mark:    标记，表示记录当前position的位置，可以通过reset()恢复到mark位置
-大小关系： 0 <= mark <= position <= limit <= capacity
+position 位置，缓冲区中正在操作数据的位置  
+mark:    标记，表示记录当前position的位置，可以通过reset()恢复到mark位置  
+大小关系： 0 <= mark <= position <= limit <= capacity  
 
-#### Channel
+#### Channel管道
 通道可以同时进行读写操作，但是流只能读或者写。通道可以实现异步读写数据  
 BIO的Stream流是单向的，NIO的Channel是双向的  
 Channel是一个接口，主要的实现子类有FinalChannel 文件数据读写\DatagramChannel UDP数据读写\ServerSocketChannel和SocketChannel 用于TCP数据读写  
 ByteBuffer支持类型化的put和get,但是put和get的类型要匹配   
 可以将普通Buffer变成只读Buffer  
 NIO还提供了MappedByteBuffer，可以让文件直接在内存中进行修改  
-NIO还支持多个Buffer完成读写操作，Scattering 和 Gathering 分散聚合：
-Scattering：将数据写入到buffer的时候，可以采用Buffer数组[分散] 
-Gathering：从buffer读取数据的时候，可以采用Buffer数组的方式[聚合]
+NIO还支持多个Buffer完成读写操作，Scattering 和 Gathering 分散聚合：  
+Scattering：将数据写入到buffer的时候，可以采用Buffer数组[分散]   
+Gathering：从buffer读取数据的时候，可以采用Buffer数组的方式[聚合]  
+
+#### Selector选择器
+(1) NIO运用的是非阻塞的IO方式，可以用一个线程处理多个客户端的连接，就会使用到selector选择器。  
+(2) Selector能够检测到多个注册的通道上是否有事件发生，如果有，就湖区事件然后对事件进行处理，这样就可以只用一个单线程去管理多个通道。也就管理了多个连接和请求。  
+(3) 只有在连接真正有读写事件发生的时候，才会进行读写，避免了开启多个线程和线程之间上下文的切换导致的开销。  
+
 
 
   
