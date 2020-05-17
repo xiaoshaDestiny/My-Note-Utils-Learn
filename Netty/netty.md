@@ -54,10 +54,19 @@ NIO还支持多个Buffer完成读写操作，Scattering 和 Gathering 分散聚�
 Scattering：将数据写入到buffer的时候，可以采用Buffer数组[分散]   
 Gathering：从buffer读取数据的时候，可以采用Buffer数组的方式[聚合]  
 
-#### Selector选择器
+####  Selector选择器
 (1) NIO运用的是非阻塞的IO方式，可以用一个线程处理多个客户端的连接，就会使用到selector选择器。  
 (2) Selector能够检测到多个注册的通道上是否有事件发生，如果有，就湖区事件然后对事件进行处理，这样就可以只用一个单线程去管理多个通道。也就管理了多个连接和请求。  
 (3) 只有在连接真正有读写事件发生的时候，才会进行读写，避免了开启多个线程和线程之间上下文的切换导致的开销。  
+open() 得到一个选择器对象  
+select() 监控所有注册的通道，当其中有IO操作可以进行的时候，将其中对应的SelectionKey加入到集合内部中来并返回
+selectedKeys 从集合内部得到所有的selectionKey
+
+当客户端连接的时候，会通过ServerSocketChannel得到SocketChannel  
+将socketChannel注册到Selector上，一个Selector可以注册多个SocketChannel  
+注册之后返回一个SelectionKey，会跟这个Selector关联  
+Selector就会进行监听select方法，返回有事件发生的通道的个数，然后获取到各个有事件发生的SelectionKey  
+这个SelectionKey就能得到了发生事件的Channel,通过Channel就能得到业务的处理   
 
 
 
