@@ -81,7 +81,15 @@ sendFile需要3次上下文切换，最少需要2次数据拷贝。
 sendFile可以利用DMA方式，减少CPU拷贝，mmap则不能，必须从内核拷贝到Socket缓冲区。  
 
 #### 原生NIO存在的问题
+(1)NIO的类库比较复杂，需要熟练掌握Selector、ServerSocketChannel、socketChannel、ByteBuffer等  
+(2)需要具备其他的额外技能，Java多线程，因为NIO涉及到Reactor模式，需要对多线程和网络编程非常熟悉，才能编写出高质量的NIO程序    
+(3)开发的工作量大，客户端短线重连，网络闪烁，半包读写，失败缓存等等  
+(4)Epoll Bug会导致Selector空轮询，最终导致CPU 100%  
 
+
+### Netty概述
+https://netty.io/
+Netty是一个异步事件驱动的网络应用框架，用于快速开发可维护的高性能协议服务器和客户端。  
 
 
 
