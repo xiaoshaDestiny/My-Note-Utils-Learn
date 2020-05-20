@@ -125,7 +125,7 @@ Reactor模式核心的组成部分就是 Reactor 和 Handlers
 reactor:在一个单独的线程中运行，负责监听和分发事件，分发给适当的处理程序来对IO事件进行反应。
 Handlers:处理程序执行IO事件要完成的实际事件。
 
-**单Reactor多线程模式** 
+**单Reactor多线程模式**   
 Reactor对象通过select监控客户端请求时间，通过dispatcher进行分发。  
 如果是建立连接请求，由Accept去处理连接请求，然后创建一个Handler对象处理完成连接后的各种事件。  
 如果不是建立连接请求，则由Reactor分发调用对应的Handler分发来处理。Handler只负责响应事件，不做处理事件的业务。通过read读取到数据之后，分发给后面的worker线程池的某个线程进行处理。
@@ -133,6 +133,38 @@ Worker线程池会分配具体的线程完成真正的请求将结果返回给Ha
 
 优点：充分利用多核CPU的处理能力。  
 缺点：多线程数据共享和访问比较复杂，Reactor自己是单线程的，要处理所有的事件监听和响应分发。  
+
+**主从Reactor多线程**  
+主Reactor只管理连接请求的建立，而从Reactor可以有多个,各自都可以处理事件的分发和Handler的调用，再把业务的调用分配给Worker线程池去处理。  
+
+优点：父线程与子线程的数据交互简单职责明确，父线程只要接收新连接，子线程分发完成后续的处理。  
+缺点：编程的复杂程度较高。
+这种主从多线程模型在许多项目中应用广泛，Nginx、MemCached、Netty等。
+
+### Netty模型
+BossGroup线程维护Selector，只关注Accept,当接收到Accept事件，获取对应的SocketChannel并且注册到Work线程（事件循环）
+当Worker线程监听到selector中通道发生自己关注的事件之后，就进行处理。
+  
+Netty工作原理示意图解析：  
+1、Netty抽象出两组线程池，一组BossGroup专门负责接收客户端的连接，另一组WorkerGroup则专门负责网络的读写  
+2、BossGroup和WorkerGroup的类型都是NioEventLoopGroup  
+3、NioEventLoopGroup相当于一个事件循环组，这个组中含有多个事件循环，每一个事件循环是NioEventLoop   
+4、NioEventLoop表示一个不断循环的执行处理任务绑定任务的线程，每一个NioEventLoop都有一个Selector，用于监听绑定在其上的socket的网络通讯  
+5、NioEventLoopGroup可以有多个线程，即可以含有多个NioEventLoop  
+6、每个Boss下的 NioEventLoop 循环执行的步骤：  
+ 6.1、轮询accept事件  
+ 6.2、处理accept事件，与Client建立连接，生成NioSocketChannel，并将其注册到某一个的worker NioEventLoop上的Selector上  
+ 6.3、再去处理任务队列上的任务，即runAllTasks  
+7、每个Worker下的NioEventLoop 循环执行的步骤：   
+ 7.1、轮询read write事件  
+ 7.2、处理IO，在对应的NioSocketChannel处理   
+ 7.3、处理任务队列的任务，即runAllTasks   
+8、每一个Worker NioEventLoop在处理业务的时候，会使用到管道pipeline,管道中包含了很多的channel ，通过pipeline可以获取到channel通道，管道中维护了很多的处理器、拦截器等等。  
+
+ 
+
+
+
 
 
 
