@@ -89,8 +89,20 @@ sendFile可以利用DMA方式，减少CPU拷贝，mmap则不能，必须从内�
 
 ### Netty概述
 https://netty.io/
-Netty是一个异步事件驱动的网络应用框架，用于快速开发可维护的高性能协议服务器和客户端。  
+Netty是由JBoss提供的一个Java社区开源框架。提供异步、基于事件驱动的网络应用程序架构，用于快速开发高性能、高可靠的网络IO程序。  
+Netty可以帮助快速搭建一个网络应用，相当于简化了NIO的开发过程。  
+Netty是目前最流行的NIO框架，Netty在互联网领域、大数据分布式计算领域、游戏行业、通讯行业等都有广泛的应用。ElasticSearch、Dubbo内部都采用了Netty框架。
 
+Netty的优点：  
+1、设计优雅，对NIO进行了封装，适用于各种传输类型的统一API调度和非阻塞的Socket，基于灵活且可扩展的事件模型，
+可以清晰的分离关注点，高度定制的线程模型，单线程-一个或者多个线程池   
+2、使用方便，详细记录的Javadoc 用户指南和实例，没有其他的依赖项  
+3、高性能、高吞吐量、低延迟，减少了资源的消耗，最小化不必要的内存复制  
+4、安全，完整的SSL/TSL 和 StartTLS支持  
+5、社区活跃，不断的更新，更多的新功能被不断的加入到Netty中  
+
+netty版本有 netty3.x  netty4.x  netty5.x   因为netty5.x有重大bug 已经被官网废除了，目前使用最多的是netty4.1.x这个版本
+下载地址：  https://bintray.com/netty/downloads/netty
 
 
 
