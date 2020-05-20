@@ -104,6 +104,16 @@ Netty的优点：
 netty版本有 netty3.x  netty4.x  netty5.x   因为netty5.x有重大bug 已经被官网废除了，目前使用最多的是netty4.1.x这个版本
 下载地址：  https://bintray.com/netty/downloads/netty
 
+### 线程模型
+传统阻塞的IO服务模型 和 Reactor模型，Reactor根据数量和处理的资源线程池数量的不同，有3种典型的实现  
+单Reactor单线程、单Reactor多线程、主从Reactor多线程   
+Netty线程模型主要是基于主从的Reactor多线程模型做了一定改进之后的。
+
+**阻塞IO服务模型**  
+获取数据输入的是阻塞的IO模型，每个链接都需要独立的线程完成数据的输入、业务处理、和数据的返回等工作。  
+会存在的问题，当并发大的时候没回创建大量的线程占用很大的系统资源。如果线程没有可读资源的时候，造成线程资源的浪费。  
+
+
 
 
 
