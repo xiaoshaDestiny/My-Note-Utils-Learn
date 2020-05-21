@@ -161,24 +161,35 @@ Netty工作原理示意图解析：
  7.3、处理任务队列的任务，即runAllTasks   
 8、每一个Worker NioEventLoop在处理业务的时候，会使用到管道pipeline,管道中包含了很多的channel ，通过pipeline可以获取到channel通道，管道中维护了很多的处理器、拦截器等等。  
 
+### debug (om.learn.netty.simple)
+Netty在创建事件循环组的时候 NioEventLoopGroup 线程的数量时CPU核心数x2    NettyRuntime.availableProcessors() * 2  
+每一个线程就叫 NioEventLoop 叫一个事件循环
+
+任务队列中的Task有3种典型的应用场景
+1、用户程序自定义的普通任务
+2、用户自定义的定时任务
+3、非当前Reactor线程调用Channel的各种方法
+例如在推送系统的业务线程里面，根据用户的标识，找到对应的Channel引用，然后调用Write类方法向该用户推送消息，就会进入到这种场景。最终的write会提交到任务队列中后被异步消费。
+
+Netty抽象出两组线程池，BossGroup专门负责接收客户端连接，WorkerGroup专门负责网络读写操作    
+NioEventLoop表示一个不断循环执行处理任务的线程，每一个NioEventLoop都有一个Selector，用于监听绑定在其上的socket网络通道      
+NioEventLoop内部采用串行化的设计，从消息的读取->解码->处理->编码->发送，始终由IO线程NioEventLoop负责    
+每个NioEventLoop中包含一个Selector、一个taskQueue  
+每个NioEventLoop的Selector上可以注册监听多个NioChannel  
+每个NioChannel只会绑定在唯一的NioEventLoop上  
+每个NioChannel都绑定有一个自己的ChannelPipeline  
+
+### 异步模型
+()
+()
+()
+()
+()
+()
+
+
+
  
-
-
-
-
-
-
-
-
-
-
-
-
-  
-
-
-
-
 
 
 
