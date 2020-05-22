@@ -201,6 +201,18 @@ Netty框架的目标就是从业务逻辑从网络基础应用编码中分离出
 通过getCause() 来获取已完成的当前操作失败的原因  
 通过addListener 来注册监听器，当操作已经完成，将会通知监听器，如果Future对象已经完成，则通知指定的监听器  
 
+Http协议是短连接
+
+Bootstrap是引导，一个Netty应用通常由一个Bootstrap开始，主要的作用是配置整个Netty程序，串联各个组件。  
+BootStrap类是客户端的启动的引导类，ServerBootstrap是服务端启动的引导类。  
+
+**Selector**  
+Netty是基于Selector对象实现IO多路复用，通过Selector一个线程就可以监听多个连接的Channel事件  
+当像一个Selector中注册Channel之后，Selector内部的机制就可以自动不断的查询这些注册的Channel是否有已经就绪的IO事件(可读，可写，网络连接完成等等)  
+这样程序就可以简单的使用一个线程高效的管理多个Channel  
+
+
+
 
 
  
