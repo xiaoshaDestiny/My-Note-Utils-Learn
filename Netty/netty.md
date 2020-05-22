@@ -211,6 +211,42 @@ Netty是基于Selector对象实现IO多路复用，通过Selector一个线程就
 当像一个Selector中注册Channel之后，Selector内部的机制就可以自动不断的查询这些注册的Channel是否有已经就绪的IO事件(可读，可写，网络连接完成等等)  
 这样程序就可以简单的使用一个线程高效的管理多个Channel  
 
+**pipeline和ChannelPipeline**   
+ChannelPipeline是一个Handler的集合，它负责处理和拦截inbound或者outbound的事件和操作，相当于一个贯穿Netty的链  
+(ChannelPipeline是保存ChannelHandler的List,用于处理或者拦截Channel的入站和出站事件)  
+ChannelPipeline实现了一种高级形式的拦截过滤模式，使用户可以完全控制事件的处理方式，以及Channel中各种ChannelHandler如何交互  
+  
+Channel有一个和他对应的ChannelPipeline 这两个是相互对应，相互可以获取到的。  
+Channel Pipeline 维护了一个由ChannelHandlerContext组成的双向链表，每一个ChannelHandlerContext有一个与它关联的Handler去处理专门的事件。  
+入站和出站事件发生在这个双向链表中，入站事件会从链表的头传递到尾，出站事件会从链表的尾向前传递到最开始的头。 
+
+
+**ChannelHandlerContext**  
+保存Channel相关的所有上下文信息，同时关联一个ChannelHandler对象。    
+ChannelHandlerContext中包含一个具体的事件处理器ChannelHandler,同时ChannelHandlerContext也绑定了对应的pipeline和Channel的信息  
+
+
+**EventLoopGroup和它的实现类NioEventLoopGroup**  
+EventLoopGroup是一组EventLoop的抽象，每一个EventLoop都维护着一个Selector实例。  
+EventLoopGroup提供next接口，可以从组里面按照一定规则获取其中一个EventLoop来处理任务。  
+通常一个服务端口也就是一个ServerSocketChannel对应一个Selector和一个EventLoop线程。BossEventLoop负责接收客户端的连接并将SocketChannel交给WorkerEventLoopGroup来进行IO处理。  
+
+BossEventLoopGroup通常是一个单线程的EventLoop，EventLoop维护着一个注册了ServerSocketChannel的Selector实例，BossEventLoop不断轮询Selector将连接事件分离出来。   
+OP_ACCEPT事件，将接收到的SocketChannel交给WorkerEventLoopGroup  
+WorkerEventLoopGroup会由next选择其中一个EventLoop来将这个SocketChannel注册到其维护的Selector上，并对其后续的IO事件进行处理  
+
+**Unpooled类**  
+Netty提供一个专门用来操作缓冲区(即Netty的数据容器)的工具类    
+ByteBuf buf = Unpooled.buffer(10);  
+是一个byte[10]的数组 不需要使用flip进行读写切换反转  
+底层是维护了一个readeIndex 和 writeIndex  
+ByteBuf buf =  Unpooled.copiedbuffer("aaaa",Charset.forName("utf-8"));  
+ 
+
+
+
+
+
 
 
 
