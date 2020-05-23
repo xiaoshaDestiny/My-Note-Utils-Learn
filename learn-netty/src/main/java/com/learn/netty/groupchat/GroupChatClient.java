@@ -43,7 +43,7 @@ public class GroupChatClient {
                             //加入处理器
                             pipeline.addLast("decoder",new StringDecoder());
                             pipeline.addLast("encoder",new StringEncoder());
-                            pipeline.addLast();
+                            pipeline.addLast(new GroupChatClientHandler());
                         }
                     });
             ChannelFuture channelFuture = bootstrap.connect(host, port).sync();
