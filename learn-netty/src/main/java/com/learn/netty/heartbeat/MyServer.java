@@ -41,9 +41,9 @@ public class MyServer {
                             // (读空闲)  3表示3秒没有读写         就会发送心跳检测包 检测连接是否正常
                             // (写空闲)  5表示5秒内没有写事件
                             // (读写空闲)7表示7秒内没有读也没有写
-                            // 当IdleStateHandler触发之后，会传递给管道的下一个Handler去处理 userEventTiggered
+                            // 当IdleStateHandler触发之后，会传递给管道的下一个Handler去处理 userEventTriggered
                             pipeline.addLast(new IdleStateHandler(3,5,7,TimeUnit.SECONDS));
-                            pipeline.addLast();
+                            pipeline.addLast(new MyServerHandler());
                         }
                     });
             ChannelFuture channelFuture = serverBootstrap.bind(7000).sync();
