@@ -48,7 +48,7 @@ public class GroupChat {
                             pipeline.addLast("encoder",new StringEncoder());
 
                             //加入自己的业务处理Handler
-                            pipeline.addLast(null);
+                            pipeline.addLast(new GroupChatServerHandler());
                         }
                     });
             System.out.println("netty服务器启动。。");
