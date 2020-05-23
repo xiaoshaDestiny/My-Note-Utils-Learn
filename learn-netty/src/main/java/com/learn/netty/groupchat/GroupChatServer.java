@@ -15,11 +15,11 @@ import io.netty.handler.codec.string.StringEncoder;
  * @author xu.rb
  * @since 2020-05-22 16:53
  */
-public class GroupChat {
+public class GroupChatServer {
 
     private int port;//端口
 
-    public GroupChat(int port) {
+    public GroupChatServer(int port) {
         this.port = port;
     }
 
@@ -64,6 +64,6 @@ public class GroupChat {
     }
 
     public static void main(String[] args) throws InterruptedException {
-        new GroupChat(7000).run();
+        new GroupChatServer(7000).run();
     }
 }
