@@ -1,0 +1,9 @@
+syntax = "proto3";//版本
+option java_outer_classname = "StudentPOJO";
+
+message Student{//会在StudentPoJO外部类中生成一个内部类Student
+
+    int32 id = 1;//Student类中有一个属性名四是id类型是int32的属性 1表示的是属性序号 不是值
+    string name = 2;
+
+}
