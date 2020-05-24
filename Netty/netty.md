@@ -242,6 +242,17 @@ ByteBuf buf = Unpooled.buffer(10);
 底层是维护了一个readeIndex 和 writeIndex  
 ByteBuf buf =  Unpooled.copiedbuffer("aaaa",Charset.forName("utf-8"));  
  
+ 
+### Google Protobuf  
+在辨别网络应用程序的时候，因为数据在网络中传输的都是二进制的字节码数据，在发送数据的时候就需要编码，接收数据的时候就需要解码。  
+codec(解码器)的组成有两个，decoder解码器和encoder编码器  
+  
+Netty本身就提供了编解码器，ObjectDecoder和ObjectEncoder可以用来时间POJO对象或者各种业务对象的编码和解码，底层使用的是Java的序列化技术，而Java本身的序列化本身效率就不太高。  
+无法跨语言、序列化后的体积大、是二进制的5倍还要多，序列化的性能不好。所有才会有 Google的Protobuf来解决这个问题。  
+
+#### Protobuf
+是谷歌发布的一个开源项目， Google protocol Buffers 是一种轻便高效的结构化数据存储格式，可以用于结构化数据的序列化。它适合做数据存储或者是RPC的数据交换。  
+支持跨平台、跨语言。 http + json  ->  tcp + protobuf
 
 
 
