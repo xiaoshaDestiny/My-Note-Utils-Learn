@@ -254,6 +254,22 @@ Netty本身就提供了编解码器，ObjectDecoder和ObjectEncoder可以用来�
 是谷歌发布的一个开源项目， Google protocol Buffers 是一种轻便高效的结构化数据存储格式，可以用于结构化数据的序列化。它适合做数据存储或者是RPC的数据交换。  
 支持跨平台、跨语言。 http + json  ->  tcp + protobuf
 
+### Netty编解码器和handler的调用机制
+netty的核心组件主要有Channel、EventLoop、ChannelFuture、ChannelHandler、ChannelPipe等。
+ChannelHandler充当了处理入站和出站数据的应用程序逻辑的容器。例如，时间ChannelInboundHandler接口(ChannelInboundHandlerAdapter)，就可以接收入站和出站的数据，这些数据被业务逻辑处理。  
+当要给客户端发送响应的时候，可以从ChannelBoundHandler冲刷数据。
+ChannelPipe提供了ChannelHandler链的管理方案。事件的运动方向是从客户端到服务端，就叫入站，从服务端到客户端，就叫出站。  
+
+netty发送或者接收一个消息就会发生一次数据转换。入站把字节码转换成想要的格式，出站把数据编码成字节数据。   
+由于不可能知道远程节点是否会一次性发送一个完整的信息，tcp有可能出现粘包和拆包问题。解码器ByteToMessageDecoder会对入站的数据进行缓冲。  
+
+### TCP粘包和拆包问题
+TCP是面向连接、面向流的，提供高可靠性服务。收发两端都要有一一成对的socket  
+发送端为了将多个发给接收端的包，更有效的发给对方，使用了优化方法Nagle算法  
+
+
+
+
 
 
 
