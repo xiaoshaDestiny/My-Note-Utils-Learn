@@ -1,4 +1,6 @@
 package com.learn.netty.tcp;
+
+
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.EventLoopGroup;
@@ -14,15 +16,16 @@ public class MyServer {
         try {
 
             ServerBootstrap serverBootstrap = new ServerBootstrap();
-            serverBootstrap.group(bossGroup,workerGroup)
-                    .channel(NioServerSocketChannel.class)
-                    .childHandler(null); //自定义一个初始化类
+            serverBootstrap.group(bossGroup,workerGroup).channel(NioServerSocketChannel.class).childHandler(new MyServerInitializer()); //自定义一个初始化类
+
 
             ChannelFuture channelFuture = serverBootstrap.bind(7000).sync();
             channelFuture.channel().closeFuture().sync();
+
         }finally {
             bossGroup.shutdownGracefully();
             workerGroup.shutdownGracefully();
         }
+
     }
 }

@@ -1,4 +1,7 @@
 package com.learn.netty.tcp;
+
+
+
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.EventLoopGroup;
@@ -14,10 +17,12 @@ public class MyClient {
 
             Bootstrap bootstrap = new Bootstrap();
             bootstrap.group(group).channel(NioSocketChannel.class)
-                    .handler(null); //自定义一个初始化类
+                    .handler(new MyClientInitializer()); //自定义一个初始化类
 
             ChannelFuture channelFuture = bootstrap.connect("localhost", 7000).sync();
+
             channelFuture.channel().closeFuture().sync();
+
         }finally {
             group.shutdownGracefully();
         }
