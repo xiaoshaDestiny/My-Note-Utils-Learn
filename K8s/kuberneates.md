@@ -77,7 +77,28 @@ Flannel是CoreOS团队针对K8s设计的一个网络规划服务，简单的来�
 
 Flannel对于跨主机的访问把数据包进行了二次封装和解封。  
 Flannel和ETCD之间的关联：ETCD存储管理Flannel可分配的IP地址段资源, ETCD监控每个Pod的实际地址，并且在内存中维护Pod节点的路由表
- 
+
+### 网络通讯详述  
+
+#### 1、同一个Pod内存通讯
+同一个Pod共享一个网络命名空间，共享同一个Linux协议栈  
+
+#### 2、Pod1至Pod2
+Pod1与pod2不再同一个物理主机上，Pod的地址是与docker0在同一个网段的，但是docker0网段与两个宿主机网卡是两个完全不同的IP网段
+并且不同的Node之间的通信只能通过宿主机的物理网卡进行，将Pod的IP和所在Node的IP关联起来，让两个Pod能够互相访问。  
+
+Pod1和Pod2在同一台机器，由docker0网桥直接转发请求至Pod2,不需要进过Flannel  
+
+#### 3、Pod至Service
+全部是由iptables维护和转发  
+
+#### 4、Pod到外网
+Pod像外网发送请求，查找路由表，转发数据包到宿主机的网卡，宿主网卡完成路由的选择，iptables执行masquerade，把源IP更改为宿主网卡的IP,然后向外网服务器发送请求。  
+
+#### 5、外网访问Pod
+要进过Service  
+
+
 
 
 
