@@ -18,6 +18,7 @@
         <module>learn-nio</module>
         <module>learn-spring-debug</module>
         <module>learn-netty</module>
+        <module>learn-sword-offer</module>
     </modules>
 
     <build>
