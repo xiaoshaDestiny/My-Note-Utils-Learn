@@ -13,6 +13,7 @@ public class FindInArr1 {
 
 
     }
+
     public boolean find(int target, int [][] array) {
         boolean find = false;
         for(int i = 0;i< array.length;i++ ){

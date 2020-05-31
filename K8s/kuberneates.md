@@ -111,6 +111,7 @@ koolshare 192.168.66.0
 master   192.168.66.10  
 node1    192.168.66.20  
 node2    192.168.66.21  
+hurber   192.168.66.100
 
  
 # 静态IP
@@ -118,10 +119,10 @@ vim /etc/sysconfig/network-scripts/ifcfg-ens33
 BOOTPROTO=static  
 ONBOOT=yes  
 IPADDR=192.168.66.10  
-NETMASK=255.255.255.0  
+NETMiASK=255.255.255.0  
 GATEWAY=192.168.66.1  
 DNS1=192.168.66.1  
-NDS2=114.114.114.114  
+DNS2=114.114.114.114  
 
 
 # 修改主机名  
@@ -148,11 +149,13 @@ yum -y install iptables-services && systemctl start iptables %% systemctl enable
 
 
 # 关闭SELinux  
+# 关闭虚拟内存  因为k8s在安装的时候会检查是不是关闭了虚拟内存 如果没有关闭的话就会导致pod被安装到虚拟内存中 很耗费性能 所以在生产的时候是要关闭的
 swapoff -a && sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
+
 setenforce 0 && sed -i 's/^SELINUX=.*/SELINUX=disabled/' /etc/selinux/config
 
 
-# 调整内核参数，对于 K8S
+# 调整内核参数 把这段话写到文件中即可
 cat > kubernetes.conf <<EOF
 net.bridge.bridge-nf-call-iptables=1
 net.bridge.bridge-nf-call-ip6tables=1
@@ -168,8 +171,11 @@ fs.nr_open=52706963
 net.ipv6.conf.all.disable_ipv6=1
 net.netfilter.nf_conntrack_max=2310720
 EOF
+#把这个文件拷贝到/etc/下面 让在开机的时候能够被调用
 cp kubernetes.conf /etc/sysctl.d/kubernetes.conf
+#手动刷新 立马生效
 sysctl -p /etc/sysctl.d/kubernetes.conf
+
 
 # 调整系统时区
 # 设置系统时区为 中国/上海
@@ -185,7 +191,9 @@ systemctl stop postfix && systemctl disable postfix
 
 
 # 设置 rsyslogd 和 systemd journald
+# 日志方案选择Journald (3步骤)
 mkdir /var/log/journal # 持久化保存日志的目录
+
 mkdir /etc/systemd/journald.conf.d
 cat > /etc/systemd/journald.conf.d/99-prophet.conf <<EOF
 [Journal]
@@ -218,8 +226,153 @@ rpm -Uvh http://www.elrepo.org/elrepo-release-7.0-3.el7.elrepo.noarch.rpm
 一次！
 yum --enablerepo=elrepo-kernel install -y kernel-lt
 # 设置开机从新内核启动
-grub2-set-default 'CentOS Linux (4.4.189-1.el7.elrepo.x86_64) 7 (Core)'
+grub2-set-default 'CentOS Linux (4.4.225-1.el7.elrepo.x86_64) 7 (Core)'
+
+#如下就安装成功了
+[root@k8s-node02 ~]# uname -r
+4.4.225-1.el7.elrepo.x86_64
 ```
+
+
+```
+
+# kube-proxy开启ipvs的前置条件
+modprobe br_netfilter
+
+cat > /etc/sysconfig/modules/ipvs.modules <<EOF
+#!/bin/bash
+modprobe -- ip_vs
+modprobe -- ip_vs_rr
+modprobe -- ip_vs_wrr
+modprobe -- ip_vs_sh
+modprobe -- nf_conntrack_ipv4
+EOF
+
+chmod 755 /etc/sysconfig/modules/ipvs.modules && bash /etc/sysconfig/modules/ipvs.modules && lsmod | grep -e ip_vs -e nf_conntrack_ipv4
+
+
+# 安装 Docker 软件
+yum install -y yum-utils device-mapper-persistent-data lvm2
+
+## 配置以下阿里云的镜像仓库
+yum-config-manager \
+--add-repo \
+http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
+
+## 安装docker-ce
+yum update -y && yum install -y docker-ce
+
+##创建 /etc/docker 目录
+mkdir /etc/docker
+## 配置 daemon.
+cat > /etc/docker/daemon.json <<EOF
+{
+"exec-opts": ["native.cgroupdriver=systemd"],
+"log-driver": "json-file",
+"log-opts": {
+"max-size": "100m"
+}
+}
+EOF
+
+mkdir -p /etc/systemd/system/docker.service.d
+
+## 重启docker服务
+systemctl daemon-reload && systemctl restart docker && systemctl enable docker
+
+
+# 安装 Kubeadm （主从配置）
+cat <<EOF > /etc/yum.repos.d/kubernetes.repo
+[kubernetes]
+name=Kubernetes
+baseurl=http://mirrors.aliyun.com/kubernetes/yum/repos/kubernetes-el7-x86_64
+enabled=1
+gpgcheck=0
+repo_gpgcheck=0
+gpgkey=http://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg
+http://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg
+EOF
+
+yum -y install kubeadm-1.15.1 kubectl-1.15.1 kubelet-1.15.1
+
+systemctl enable kubelet.service
+
+
+#拷贝压缩进项镜像到系统脚本
+#!/bin/bash
+ls /root/kubeadm-basic.images > /tmp/image-list.txt
+cd /root/kubeadm-basic.images
+for i in $( cat /tmp/image-list.txt)
+do
+        docker load -i $i
+done
+rm -rf /tmp/image-list.txt
+
+#把镜像和脚本传到其他节点上
+scp -r kubeadm-basic.images load-images.sh root@k8s-node01:/root/
+
+
+
+#初始化主节点
+kubeadm config print init-defaults > kubeadm-config.yaml
+localAPIEndpoint:
+advertiseAddress: 192.168.66.10
+kubernetesVersion: v1.15.1
+networking:
+podSubnet: "10.244.0.0/16"
+serviceSubnet: 10.96.0.0/12
+---
+apiVersion: kubeproxy.config.k8s.io/v1alpha1
+kind: KubeProxyConfiguration
+featureGates:
+SupportIPVSProxyMode: true
+mode: ipvs
+
+
+kubeadm init --config=kubeadm-config.yaml --experimental-upload-certs | tee kubeadm-init.log
+
+#创建文件
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+#查看k8s集群节点状态 还需要一个扁平化的网络
+kubectl get node
+NAME           STATUS     ROLES    AGE     VERSION
+k8s-master01   NotReady   master   7m48s   v1.15.1
+
+mkdir install-k8s
+
+在/root/install-k8s/plugin/flannel 下：
+wget https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+
+如果连接失败 在/etc/hosts文件添加一条 199.232.68.133 raw.githubusercontent.com
+
+下载下来这个文件之后 
+kubectl create -f kube-flannel.yml
+
+
+
+# 部署网络
+kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+
+
+
+在主节点初始化的日志文件的末尾，可以看到子节点加入k8s集群的命令：
+kubeadm join 192.168.66.10:6443 --token abcdef.0123456789abcdef \
+    --discovery-token-ca-cert-hash sha256:185337c1835565e3a19d07031c5d625cb270c60cfc7ab68951dbe9c33ca1b7df
+
+
+```
+遇到的问题：  
+docker拉取flannel镜像失败 
+kubectl delete -f kube-flannel.yml  
+vim kube-flannel.yml  
+kubectl create -f kube-flannel.yml 
+
+下拉镜像：quay.io/coreos/flannel:.....
+如果拉取较慢，可以改为：quay-mirror.qiniu.com/coreos/flannel:.....
+
+
 
 
 
