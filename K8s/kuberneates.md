@@ -372,6 +372,43 @@ kubectl create -f kube-flannel.yml
 下拉镜像：quay.io/coreos/flannel:.....
 如果拉取较慢，可以改为：quay-mirror.qiniu.com/coreos/flannel:.....
 
+```
+玩一玩
+kubectl get pod -n kube-system
+命令行管理工具 指定名称空间是 kube-system  系统组件会被默认安装在kube-system名称空间下 不加参数代表查询default名称空间
+
+kubectl get node
+
+kubectl get pod -n kube-system -o wide  查看更加详细的信息
+
+mv install-k8s/ /usr/local
+
+```
+
+```
+安装harbor
+vim /etc/docker/daemon.json
+
+其他节点也是一样的
+{
+"exec-opts": ["native.cgroupdriver=systemd"],
+"log-driver": "json-file",
+"log-opts": {
+"max-size": "100m"
+},
+"insecure-registries": ["https://hub.atguigu.com"]
+}
+
+重启docker
+systemctl restart docker
+
+yum -y install lrzsz
+
+
+
+```
+
+
 
 
 
