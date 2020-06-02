@@ -396,7 +396,8 @@ vim /etc/docker/daemon.json
 "log-opts": {
 "max-size": "100m"
 },
-"insecure-registries": ["https://hub.atguigu.com"]
+"registry-mirrors": ["https://svrzwtvh.mirror.aliyuncs.com"],
+"insecure-registries": ["https://hub.xiaosha.com"]
 }
 
 重启docker
@@ -405,6 +406,117 @@ systemctl restart docker
 yum -y install lrzsz
 
 
+mkdir /data/cert
+
+openssl genrsa -des3 -out server.key 2048
+openssl req -new -key server.key -out server.csr
+cp server.key server.key.org
+openssl rsa -in server.key.org -out server.key
+openssl x509 -req -days 365 -in server.csr -signkey server.key -out server.crt
+
+chmod -R 777 /data/cert
+
+
+
+#日志文件位置
+/var/log/harbor/
+
+#停止docker中的全部容器/移除全部容器/删除全部镜像
+docker stop $(docker ps -aq)
+docker rm $(docker ps -aq)
+docker rmi $(docker images -q)
+
+
+# 推送本地镜像到hub
+# 重新改一个标签 这个标签是hub定义的   在push的时候要进行登录
+docker login hb.xiaosha.com 
+docker tag mysql:latest hub.xiaosha.com/library/mysql:latest
+docker push hub.xiaosha.com/library/mysql:latest
+
+
+#创建
+kubectl run nginx-deployment --image=hub.xiaosha.com/library/myapp:v1 --port=80 --replicas=1
+
+#查看
+kubectl get deployment     kubectl get rs     kubectl get pod    kubectl get pod -o wide 
+
+
+
+kubectl get deployment
+NAME               READY   UP-TO-DATE   AVAILABLE   AGE
+nginx-deployment   1/1     1            1           37s
+
+kubectl get rs
+NAME                          DESIRED   CURRENT   READY   AGE
+nginx-deployment-84d55cd494   1         1         1       72s
+
+kubectl get pod
+NAME                                READY   STATUS    RESTARTS   AGE
+nginx-deployment-84d55cd494-zhdqb   1/1     Running   0          110s
+
+kubectl get pod -o wide
+NAME                                READY   STATUS    RESTARTS   AGE     IP           NODE         NOMINATED NODE   READINESS GATES
+nginx-deployment-84d55cd494-zhdqb   1/1     Running   0          2m46s   10.244.1.2   k8s-node01   <none>           <none>
+
+扩容到三个
+kubectl scale --replicas=3 deployment/nginx-deployment
+
+kubectl get pod
+NAME                                READY   STATUS    RESTARTS   AGE
+nginx-deployment-84d55cd494-2ch62   1/1     Running   0          40s
+nginx-deployment-84d55cd494-b5jq2   1/1     Running   0          40s
+nginx-deployment-84d55cd494-zhdqb   1/1     Running   0          9m10s
+
+kubectl get pod -o wide
+NAME                                READY   STATUS    RESTARTS   AGE     IP            NODE         NOMINATED NODE   READINESS GATES
+nginx-deployment-84d55cd494-2ch62   1/1     Running   0          61s     10.244.2.10   k8s-node02   <none>           <none>
+nginx-deployment-84d55cd494-b5jq2   1/1     Running   0          61s     10.244.1.3    k8s-node01   <none>           <none>
+nginx-deployment-84d55cd494-zhdqb   1/1     Running   0          9m31s   10.244.1.2    k8s-node01   <none>           <none>
+
+这时候要访问这个服务该怎么办？  k8s已经帮我们实现了代理
+kubectl get svc
+NAME         TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)   AGE
+kubernetes   ClusterIP   10.96.0.1    <none>        443/TCP   2d23h
+
+kubectl get deployment
+NAME               READY   UP-TO-DATE   AVAILABLE   AGE
+nginx-deployment   3/3     3            3           12m
+
+
+kubectl expose deployment nginx-deployment --port=30000 --target-port=80
+
+
+kubectl get svc
+NAME               TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)     AGE
+kubernetes         ClusterIP   10.96.0.1        <none>        443/TCP     2d23h
+nginx-deployment   ClusterIP   10.101.226.231   <none>        30000/TCP   42s
+
+curl 10.101.226.231:30000
+Hello MyApp | Version: v1 | <a href="hostname.html">Pod Name</a>
+就访问到服务了
+
+那如何在外部访问到k8s内部的服务？
+上面 SVC的默认type是 ClusterIp  
+
+kubectl edit svc nginx-deployment
+把ClusterIp 改成 NodePort
+
+再去get svc
+kubectl get svc
+NAME               TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)           AGE
+kubernetes         ClusterIP   10.96.0.1        <none>        443/TCP           2d23h
+nginx-deployment   NodePort    10.101.226.231   <none>        30000:31331/TCP   8m8s
+给了一个31331的端口
+
+可以先查看一下
+netstat -anpt | grep 31331
+tcp6       0      0 :::31331                :::*                    LISTEN      3309/kube-proxy
+
+浏览器只要是 k8s-node01:31331即可访问
+http://192.168.66.21:31331/
+http://192.168.66.20:31331/
+
+完成！
 
 ```
 
