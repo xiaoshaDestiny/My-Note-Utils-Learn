@@ -1,0 +1,1 @@
+# Kubernetes 资源清单
