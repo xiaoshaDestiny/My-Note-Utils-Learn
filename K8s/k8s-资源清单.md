@@ -49,6 +49,31 @@ HPA、PodTemplate、LimitRange
 在K8s中，一般使用yaml格式的文件来创建符合我们期望的pod，这样的yaml文件一般就叫做资源清单  
 
 ## 常用字段解释说明
+### 必须存在的属性
+|参数名|字段类型|说明|
+|---|---|---|
+|version|String|指定的是K8s API的版本，基本上是v1,可以用kubectl api-version 命令查询。RESTful的编程风格，会携带两个信息，一个是组，一个是版本|
+|kind|String|指的是yaml文件定义的资源类型和角色，比如Pod，Service，Deployment，看你创建的是什么|
+|metadata|Object|元数据对象，固定值就写metadata|
+|metadata.name|String|元数据对象的名字，这里由我们编写，比如命名Pod的名字|
+|metadata.namespace|String|元数据对象的命名空间，自己定义|
+|Spec|Object|详细定于对象，固定值就写Spec|
+|Spec.containers[]|Object|Spec对象的容器列表定义，是个列表|
+|Spec.containers[].name|list|定义容器的名字|
+|Spec.containers[].image|String|要用到的镜像名称|
+
+### 主要对象 
+不写也可以会补充默认值    
+
+|参数名|字段类型|说明|
+|---|---|---|
+|spec.containers[].name|String|定义容器的名字|
+|spec.containers[].image|String|定义要用到的镜像名称|
+|spec.containers[].imagePullPolicy|String|定义镜像拉取的策略，Aways(每次都尝试重新拉群镜像),Never(仅使用本地镜像),IfNotPresent(如果本地没有就拉取在线的镜像),默认是Aways|
+|spec.containers[].command[]|List|指定容器启动命令，因为是数组可以指定多个，不指定就是要镜像打包时候使用的启动命令|
+|spec.containers[].args[]|List|指定容器启动的参数，数组可以指定多个|
+|spec.containers[].workingDir|String|指定容器的工作目录|
+
 
 
 
