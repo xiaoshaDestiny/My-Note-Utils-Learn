@@ -123,11 +123,11 @@ spec:
      
       
 上面这个文件：  
-一个Pod里面放了两个容器，一个叫app，一个叫test，会先运行一个pause，让他们共享网路栈，这两个镜像的端口就会报错，因为端口被占用了。
+一个Pod里面放了两个容器，一个叫app，一个叫test，会先运行一个pause，
+让他们共享网路栈，这两个镜像的端口就会报错，因为端口被占用了。
+
 创建Pod
-
 kubectl apply -f pod.yml
-
 
 kubectl get pod
 NAME                                READY   STATUS             RESTARTS   AGE
@@ -190,8 +190,8 @@ Init容器与普通的容器非常像，出来以下两点：Init容器总是运
 
 ```
 init-pod.yaml
-首先是运行了一个Pod,Pod里面的主容器是myapp-container,是一个很小的镜像，这个容器在运行成功之后会输入一句话：The app isrunning! 然后休眠6分钟
-然后是定义了一组初始化镜像InitC，有两个，在循环的检测一些service
+首先是运行了一个Pod,Pod里面的主容器是myapp-container,是一个很小的镜像，这个容器在运行成功之后会输入一句话：
+The app isrunning! 然后休眠6分钟。然后是定义了一组初始化镜像InitC，有两个，在循环的检测一些service
 
 apiVersion: v1
 kind: Pod
