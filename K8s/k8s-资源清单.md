@@ -289,6 +289,13 @@ NAME        READY   STATUS    RESTARTS   AGE
 myapp-pod   1/1     Running   0          19m
 ```
 
+### InitC的特殊说明
+1、在Pod启动过程中，Init容器会按照顺序在网络和数据卷初始化之后启动(网络和数据卷的初始化是在Pause中去完成的)。每个容器必须在下一个容器启动之前成功推出。   
+2、如果由于运行时或失败退出，将导致容器启动失败，它会根据Pod的restartPolocy指定的策略进行重试。  
+然而，如果Pod的restartPolicy设置成Always，Init容器失败的时候会使用RestartPolicy策略。   
+3、在所有的Init容器没有成功之前，Pod将不会变成Ready状态。Init容器的端口将不会在Service中进行聚集。正在初始化中的Pod处于pending状态，但应该会将Initializing状态设置为true。   
+4、如果Pod重启，所有的Init容器会重新执行。  
+5、对Init容器spec的修改被限制在容器image字段，修改其他字段都不会生效。更改Init容器的image字段，等价于重启该Pod。  
 
 
 
