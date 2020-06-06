@@ -1,7 +1,7 @@
 # Kubernetes 资源清单
 等于是一个剧本一样的东西
 
-## k8s中的资源
+## 一、k8s中的资源
 分类 （名称空间级别，集群级别，元数据类型）  
   
 名称空间级别：仅仅在此名称空间下生效，比如之前使用kubeadm 安装k8s集群的时候，都会把所有的系统组件放在kube-system这个名称空间下。    
@@ -44,12 +44,12 @@ HPA、PodTemplate、LimitRange
 
 
 
-## 资源清单
+## 二、资源清单
 资源清单到底是什么？  
 在K8s中，一般使用yaml格式的文件来创建符合我们期望的pod，这样的yaml文件一般就叫做资源清单  
 
-## 常用字段解释说明
-### 必须存在的属性
+## 三、常用字段解释说明
+### 3.1、必须存在的属性
 |参数名|字段类型|说明|
 |---|---|---|
 |version|String|指定的是K8s API的版本，基本上是v1,可以用kubectl api-version 命令查询。RESTful的编程风格，会携带两个信息，一个是组，一个是版本|
@@ -62,7 +62,7 @@ HPA、PodTemplate、LimitRange
 |Spec.containers[].name|list|定义容器的名字|
 |Spec.containers[].image|String|要用到的镜像名称|
 
-### 主要对象 
+### 3.2、主要对象 
 不写也可以会补充默认值    
 
 |参数名|字段类型|说明|
@@ -94,7 +94,7 @@ HPA、PodTemplate、LimitRange
 |spec.containers[].resources.requests.memory|String|内存请求，单位是Mib,Gib,容器启动的初始化可用数量|
 
 
-### 额外的参数选项
+### 3.3、额外的参数选项
 |参数名|字段类型|说明|
 |---|---|---|
 |spec.restartPolicy|String|定义Pod的重启策略，可选值为Aways,OnFailure,默认值是Aways。Aways：Pod一旦终止运行，则无论容器是怎么样终止的，kubelet都将重启它。OnFailure:只有Pod以非零退出码终止时，kubelet才会重启该容器，如果容器正常结束(退出码是0)，则kubelet将不会重启它。Never:Pod终止之后，kubelet将退出码报告给Master,不会重启该Pod|
@@ -102,24 +102,51 @@ HPA、PodTemplate、LimitRange
 |spec.imagePullSecrets|Object|定义pull镜像时使用secret名称，以name:secretKey格式指定|
 |spec.hostNetwork|Boolean|定义是否使用主机网络模式，默认值是false。设置true表示使用宿主机网络，不使用docker网桥，同时设置了true将无法再同一台宿主机上启动第二个副本|
 
+### 自己写pod模板
+```
+pod.yml
+#采用哪一个版本进行资源的申请
+apiVersion: v1
+kind: Pod
+metadata: 
+    name: myapp-pod
+    namespace: default #不写默认也是default
+    labels: 
+        app: myapp
+        version: v1
+spec: 
+    containers: 
+    - name: app
+      image: hub.xiaosha.com/library/myapp
+    - name: test
+      image: hub.xiaosha.com/library/myapp
+     
+      
+上面这个文件：  
+一个Pod里面放了两个容器，一个叫app，一个叫test，会先运行一个pause，让他们共享网路栈，这两个镜像的端口就会报错，因为端口被占用了。
+创建Pod
+
+kubectl apply -f pod.yml
 
 
+kubectl get pod
+NAME                                READY   STATUS             RESTARTS   AGE
+myapp-pod                           0/2     ImagePullBackOff   0          15s
+nginx-deployment-84d55cd494-5h5jn   1/1     Running            0          51m
+nginx-deployment-84d55cd494-wbcsx   1/1     Running            0          51m
+nginx-deployment-84d55cd494-x967f   1/1     Running            0          51m
 
 
-|metadata|Object|元数据对象，固定值就写metadata|
-|metadata.name|String|元数据对象的名字，这里由我们编写，比如命名Pod的名字|
-|metadata.namespace|String|元数据对象的命名空间，自己定义|
-|Spec|Object|详细定于对象，固定值就写Spec|
-|Spec.containers[]|Object|Spec对象的容器列表定义，是个列表|
-|Spec.containers[].name|list|定义容器的名字|
-|Spec.containers[].image|String|要用到的镜像名称|
+查看myapp-pod这个Pod中各个容器的启动情况
+kubectl describe pod myapp-pod
 
 
+查看myapp-pod这Pod中 容器名称是test的这个容器的启动日志
+kubectl log myapp-pod -c test
 
 
+kubectl create -f pod.yml
 
-
-
-
+```
 ## 容器的生命周期
 
