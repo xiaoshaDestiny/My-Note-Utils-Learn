@@ -149,4 +149,154 @@ kubectl create -f pod.yml
 
 ```
 ## 容器的生命周期
+探测：比如现在一个pod里面运行了两个容器，但是容器中的进程已经死亡了，但是这个容器没有退出
+就会造成这个Pod还在处于一个running的状态，这个时候其实服务已经是不可用的了，但是这个Pod还在是可用的。这样就是存在了问题的。
+
+整个Pod从创建到使用的过程：  
+最开始的时候，请求指令被下发到api接口，被调度到kubelet上，会进行一个容器环境的初始化 
+首先会创建pause这个基础容器，然后就是初始化容器 initC： 容器运行的前提条件是在本机的某个存储位置有文件存在,initC 就会去把这个文件生成，只英语初始化，不会跟随着整个Pod的生命周期而存在  
+
+接下来才到主容器的运行过程：
+在容器运行之前是一个start操作，readiness是一个就绪检测，liveness是生存检测，容器退出之后会有一个stop操作。  
+
+**就绪检测**  
+Deployment创建了多个Pod之后，在进程没有初始化的时候是不能通过service代理给K8s集群之外的客户端去访问的。这个时候就需要一个就绪检测。
+根据命令，TCP连接，Http协议获取状态判断这个服务是否可用。可用之后再把运行状态改成Running。
+
+**生存检测**  
+容器内存的进程假死了，也就是这个进程已经不能继续对外提供服务的时候，就需要生存检测来将Pod的状态改变。检测到状态改变之后才能对这个容器进行重启的操作。
+
+kubectl像kubeapi接口发送指令，kubeapi会调度到kubelet(这个调度过程是由etcd去完成的)，
+kubelet会去调度cri去完成容器环境的初始化，初始化的过程中会先启动一个pause的基础容器
+这个容器是谷歌做的负责网络和存储卷共享的一个容器，在同一个Pod中，所有的容器都是可以共享的。  
+接着进行initC的初始化，initC的初始化完成之后就到了mainC的运行过程。
+刚启动的时候有一个start命令,结束的时候有一个stop命令。还伴随着readness和liveness检测。
+
+### initC 初始化容器
+Pod能够具有多个容器，应用运行在容器里面，但时它也有可能有一个或者多个先于应用容器启动的Init容器。  
+
+Init容器与普通的容器非常像，出来以下两点：Init容器总是运行成功到完成为止；每个Init容器都必须在下一个Init容器启动之前成功完成。  
+
+如果Pod和Init容器失败，Kubernetes会不断的重启该Pod,直到Init容器成功为止。如果Pod对应的restartPolicy为never,它不会重新启动。    
+
+### init容器的作用
+因为Init容器具有与应用容器分离的单独镜像，所以他们的启动相关代码具有如下优势：    
+1、它们可以包含并运行实用工具，但是出于安全考虑，是不建议在应用程序容器镜像中包含这些实用工具的。  
+2、它们可以包含使用工具和定制化代码来安装，但是不能出现在应用程序镜像中。例如。创建镜像没有必要 FROM 另外一个镜像，只需要在安装过程中使用类似sed、awk、python或者dis这样的工具。    
+3、应用程序镜像可以分离出创建和部署的角色，而没有必要联合它们构建一个单独的镜像。  
+4、Init容器使用Linux Namespace，所以相对应用程序容器来说具有不同的文件系统视图。因此，它们能够具有访问Secret的权限，而应用程序容器则不能。  
+假设有一堆文件，是mainC需要调用的，但是mainC没有权限
+5、它们必须在应用程序容器启动之前运行完成，而应用程序容器是并行运行的，所以Init容器能提供一种简单阻塞延迟应用容器的启动方法，知道满足了一组先决条件。    
+
+```
+init-pod.yaml
+首先是运行了一个Pod,Pod里面的主容器是myapp-container,是一个很小的镜像，这个容器在运行成功之后会输入一句话：The app isrunning! 然后休眠6分钟
+然后是定义了一组初始化镜像InitC，有两个，在循环的检测一些service
+
+apiVersion: v1
+kind: Pod
+metadata:
+    name: myapp-pod
+    labels:
+        app: myapp
+spec:
+    containers:
+    - name: myapp-container
+      image: busybox
+      command: ['sh', '-c', 'echo The app is running! && sleep 3600']
+    initContainers:
+    - name: init-myservice
+      image: busybox
+      command: ['sh', '-c', 'until nslookup myservice; do echo waiting for myservice; sleep 2; done;']
+    - name: init-mydb
+      image: busybox
+      command: ['sh', '-c', 'until nslookup mydb; do echo waiting for mydb; sleep 2; done;']
+
+
+删除所有Pod的方式
+kubectl get svc
+kubectl delete deployment --all
+kubectl delete pod --all
+kubectl delete svc ...
+
+
+kubectl create -f init-pod.yml
+
+
+kubectl get pod
+NAME        READY   STATUS     RESTARTS   AGE
+myapp-pod   0/1     Init:0/2   0          8s
+
+查看日志
+kubectl log myapp-pod init-myservice
+
+
+** server can't find myservice.default.svc.cluster.local: NXDOMAIN
+*** Can't find myservice.svc.cluster.local: No answer
+*** Can't find myservice.cluster.local: No answer
+*** Can't find myservice.default.svc.cluster.local: No answer
+*** Can't find myservice.svc.cluster.local: No answer
+*** Can't find myservice.cluster.local: No answer
+waiting for myservice
+Server:		10.96.0.10
+Address:	10.96.0.10:53
+
+
+这个时候就一直在init状态，因为需要的SVC没有被创建，两个Init容器都没有正常的启动
+去创建一下这两个service
+
+vim myservice.yaml
+
+kind: Service
+apiVersion: v1
+metadata:
+    name: myservice
+spec:
+    ports:
+      - protocol: TCP
+        port: 80
+        targetPort: 9376
+        
+
+kubectl get pod
+NAME        READY   STATUS     RESTARTS   AGE
+myapp-pod   0/1     Init:1/2   0          14m
+
+
+这个时候就会变成一个已经初始化成功，查看svc
+kubectl get svc
+NAME         TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)   AGE
+kubernetes   ClusterIP   10.96.0.1      <none>        443/TCP   6d15h
+myservice    ClusterIP   10.103.58.11   <none>        80/TCP    5m33s
+
+接着创建服务
+
+vim mydb.yaml
+
+kind: Service
+apiVersion: v1
+metadata:
+    name: mydb
+spec:
+    ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 9377
+
+
+kubectl get pod
+NAME        READY   STATUS    RESTARTS   AGE
+myapp-pod   1/1     Running   0          19m
+```
+
+
+
+
+
+
+
+
+
+
+
 
