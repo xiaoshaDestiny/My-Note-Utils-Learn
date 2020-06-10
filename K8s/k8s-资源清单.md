@@ -317,16 +317,49 @@ myapp-pod   1/1     Running   0          19m
 #### 存活探测 livenessProbe
 指示容器是否正在运行。如果存活探测失败，kubelet会杀死该容器，并且容器将受到其 重启策略 的影响。
 如果容器不提供存活探测，默认就是success  
+```
+apiVersion: v1
+kind: Pod
+metadata:                   #元数据信息
+  name: liveness-exec-pod   #这个Pod的名称
+  namespace: default        #命名空间
+spec:
+  containers:
+  - name: liveness-exec-container   #运行的第一个容器叫liveness-exec-container
+    image: busybox                  #镜像的名字
+    imagePullPolicy: IfNotPresent   #如果本地有这个镜像，就不会去拉（没有加版本，默认是latest）
+    #创建一个文件，休眠60秒，之后把这个文件删除，再休眠6分钟
+    command: ["/bin/sh","-c","touch /tmp/live ; sleep 60; rm -rf /tmp/live; sleep 3600"]
+    livenessProbe:                  #存活检测
+      exec:
+        command: ["test","-e","/tmp/live"]  #检查是不是有一个文件存在
+      initialDelaySeconds: 1                #延迟1秒去完成
+      periodSeconds: 3                      #重试时间是3秒
+      
+[root@k8s-master01 ~]# kubectl get pod -o wide
+NAME                READY   STATUS    RESTARTS   AGE   IP            NODE         NOMINATED NODE   READINESS GATES
+liveness-exec-pod   1/1     Running   0          81s   10.244.2.17   k8s-node02   <none>           <none>
+
+[root@k8s-master01 ~]# kubectl get pod -o wide
+NAME                READY   STATUS    RESTARTS   AGE   IP            NODE         NOMINATED NODE   READINESS GATES
+liveness-exec-pod   1/1     Running   1          2m    10.244.2.17   k8s-node02   <none>           <none>
+```
+
+
+
+
+
 
 #### 就绪探测 readinessProbe
 指容器是否准备好服务请求。如果就绪探测失败，端点控制将从Pod匹配的所有Service的端点中删除该Pod的Ip地址。  
 初始延迟之前的就绪状态默认是Failure。如果容器不停就绪探针，则默认状态就是Success   
 就绪探测之后，MainC才能宣布能够正常对外提供访问
 
+**就绪探测**
 ```
 vim ready.yml
 
-#就绪探测
+
 apiVersion: v1
 kind: Pod
 metadata:
@@ -376,11 +409,41 @@ NAME                    READY   STATUS    RESTARTS   AGE
 readiness-httpget-pod   1/1     Running   0          10m
 
 因为有了index1.html这个文件 这个容器就是ready状态了
-
 ```
  
+#### 启动退出动作
+```
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: lifecycle-demo
+spec:
+  containers:
+  - name: lifecycle-demo-container
+    image: hub.xiaosha.com/library/myapp:v1
+    lifecycle:
+      postStart:
+        exec:
+          command: ["/bin/sh", "-c", "echo Hello from the postStart handler > /usr/share/message"]
+      preStop:
+        exec:
+      command: ["/bin/sh", "-c", "echo Hello from the poststop handler > /usr/share/message"]
 
 
+[root@k8s-master01 ~]# kubectl exec lifecycle-demo -it -- /bin/sh
+/ # cat /usr/share/message 
+Hello from the postStart handler
+/ # exit
+
+```
+#### Pod phase可能存在的值
+挂起：Pending，Pod已经被kubernetes系统授权，但又一个或者多个容器镜像没有进行创建，等待时间包括调度Pod的时间和通过网络下载镜像的时间，这需要花时间。   
+运行中：Running，Pod已经绑定到了一个节点上，Pod中所有的容器都已经被创建，至少有一个容器正在运行，或者正在处于启动护着重启状态。   
+成功：Success，Pod中的所有中期都被成功终止，并且都不会再重启。    
+失败：Failed，Pod中所有容器都已经终止了，并且至少有一个容器是因为失败终止，也就是说，容器以非0状态退出或者被系统终止。    
+未知：Unknown,因为某些原因无法取得Pod的状态，通常是因为与Pod所在的主机通讯失败。    
+ 
 
 
 
