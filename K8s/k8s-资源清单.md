@@ -314,8 +314,74 @@ myapp-pod   1/1     Running   0          19m
 失败：容器未通知诊断  
 未知：诊断失败，不会采取任何行动措施  
 
-#### 存活探测
-指示容器是否正在运行。如果存活探测失败，kubelet会杀死该容器，并且容器将受到其 重启策略 的影响
+#### 存活探测 livenessProbe
+指示容器是否正在运行。如果存活探测失败，kubelet会杀死该容器，并且容器将受到其 重启策略 的影响。
+如果容器不提供存活探测，默认就是success  
+
+#### 就绪探测 readinessProbe
+指容器是否准备好服务请求。如果就绪探测失败，端点控制将从Pod匹配的所有Service的端点中删除该Pod的Ip地址。  
+初始延迟之前的就绪状态默认是Failure。如果容器不停就绪探针，则默认状态就是Success   
+就绪探测之后，MainC才能宣布能够正常对外提供访问
+
+```
+vim ready.yml
+
+#就绪探测
+apiVersion: v1
+kind: Pod
+metadata:
+  name: readiness-httpget-pod
+  namespace: default
+spec:
+  containers:
+  - name: readiness-httpget-container
+    image: hub.xiaosha.com/library/myapp:v1
+    imagePullPolicy: IfNotPresent
+    readinessProbe:
+      httpGet:
+        port: 80
+        path: /index1.html
+      initialDelaySeconds: 1
+      periodSeconds: 3
+
+#这个路径下面是没有index1.html的，所以这个就绪检测是不会通过的
+
+
+kubectl create -f ready.yml
+
+
+kubectl get pod
+NAME                    READY   STATUS    RESTARTS   AGE
+readiness-httpget-pod   0/1     Running   0          34s
+
+
+kubectl describe pod readiness-httpget-pod
+failed: HTTP probe failed with statuscode: 404
+
+
+# exec 进入到pod的容器里面 因为这个Pod只有一个，不需要指定容器名称 如果有多个的话
+# 需要使用 -c 指定进入哪一个容器 -it代表的是交互
+kubectl exec readiness-httpget-pod -it -- /bin/sh
+
+#之后进入到指定路径下面，去吧这个index1.hrml文件创建
+
+/ # cd /usr/share/nginx/html/
+/usr/share/nginx/html # echo "123" >> index1.html
+/usr/share/nginx/html # ls
+50x.html     index.html   index1.html
+#退出容器
+
+kubectl get pod
+NAME                    READY   STATUS    RESTARTS   AGE
+readiness-httpget-pod   1/1     Running   0          10m
+
+因为有了index1.html这个文件 这个容器就是ready状态了
+
+```
+ 
+
+
+
 
 
 
