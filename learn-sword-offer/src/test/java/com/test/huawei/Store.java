@@ -2,10 +2,7 @@ package com.test.huawei;
 
 import org.junit.Test;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -15,6 +12,111 @@ import java.util.regex.Pattern;
  * @since 2020-06-11 10:37
  */
 public class Store {
+
+
+    public void test10(){
+
+    }
+    public void test09(){
+
+    }
+    public void test08(){
+
+    }
+
+    /**
+     * 首先输入要输入的整数个数n，然后输入n个整数。输出为n个整数中负数的个数，和所有正整数的平均值，结果保留一位小数。
+     */
+    public void test07(){
+        Scanner scanner = new Scanner(System.in);
+        while (scanner.hasNext()){
+
+            int num = scanner.nextInt();
+
+            ArrayList<Integer> pNum = new ArrayList<>();//正数
+            ArrayList<Integer> nNum = new ArrayList<>();//负数
+            ArrayList<Integer> zNum = new ArrayList<>();//0
+
+            for (int i = 0; i < num; i++) {
+                int in = scanner.nextInt();
+                if(in == 0){
+                    zNum.add(in);
+                }
+                if(in > 0){
+                    pNum.add(in);
+                }
+                if(in < 0){
+                    nNum.add(in);
+                }
+            }
+
+            System.out.print(nNum.size());
+            System.out.print(" ");
+
+ /*       Integer sum = pNum.stream().reduce(Integer::sum).get();
+        System.out.printf("%.1f\n",(sum / pNum.size()));*/
+
+            double avg = pNum.stream().mapToInt(m -> m).average().getAsDouble();
+            System.out.printf("%.1f\n",avg);
+        }
+
+    }
+
+    /**
+     * ip合法 0.0.0.0 - 255.255.255.255之间
+     *  .  要用  \\.做转义
+     */
+    public void test06(){
+        Scanner scanner = new Scanner(System.in);
+
+        while (scanner.hasNext()){
+
+            String s = scanner.nextLine();
+            String[] split = s.split("\\.");
+            System.out.println(s);
+            System.out.println(Arrays.toString(split));
+
+            if(split.length != 4){
+                System.out.println("NO");
+            }
+
+            boolean flag = true;
+            for (int i = 0; i <split.length ; i++) {
+                Integer num = new Integer(split[i]);
+                if(num < 0 || num >255){
+                    flag = false;
+                }
+            }
+
+            if(flag == true){
+                System.out.println("YES");
+            }else {
+                System.out.println("NO");
+            }
+
+        }
+    }
+
+    public void test05(){
+        //A 是65 a是97     中间隔着32
+
+        String str = "as%%66-JBo7o";
+
+        //把0-9的数字全部换成0
+        System.out.println(Pattern.compile("[0-9]").matcher(str).replaceAll("0"));
+
+        //找到字符串里面的所有数字
+        String[] split = Pattern.compile("[^0-9]").matcher(str).replaceAll(",")
+                .replaceAll(",,",",")
+                .replaceAll(",,",",")
+                .replaceAll(",,",",")
+                .split(",");
+        System.out.println(Arrays.toString(split));
+
+        //找到字符串里面的所有连续字符串
+        String[] split1 = Pattern.compile("[^a-zA-Z]").matcher(str).replaceAll(",").split(",");
+        System.out.println(Arrays.toString(split1));
+    }
 
     public void test04() {
         //字符串的最长数字子串
