@@ -5,6 +5,7 @@ import org.junit.Test;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * @author xu.rb
@@ -14,14 +15,175 @@ import java.util.regex.Pattern;
 public class Store {
 
 
+    @Test
+    public void test12(){
+
+        System.out.println(1%4);
+        System.out.println(2%4);
+        System.out.println(3%4);
+        System.out.println(4%4);
+        System.out.println(5%4);
+
+
+    }
+
+
+    /**
+     * 查找和排序
+     *
+     * 题目：输入任意（用户，成绩）序列，可以获得成绩从高到低或从低到高的排列,相同成绩
+     * 都按先录入排列在前的规则处理。
+     * 3
+     * 0
+     * fang 90
+     * yang 50
+     * ning 70
+     *
+
+     * fang 90
+     * ning 70
+     * yang 50
+     *
+     */
+    public void test11(){
+        Scanner scanner = new Scanner(System.in);
+        while (scanner.hasNext()){
+            int num = new Integer(scanner.nextLine());
+            int sort = new Integer(scanner.nextLine());
+            List<HashMap<String, Object>> maps = new ArrayList<>();
+            for (int i = 0; i < num; i++) {
+                String s = scanner.nextLine();
+                String[] split = s.split(" ");
+                HashMap<String, Object> map = new HashMap<>();
+                map.put("name",new String(split[0]));
+                map.put("cj",new Integer(split[1]));
+                maps.add(map);
+            }
+            //maps.stream().forEach(System.out::println);
+
+            List<HashMap<String, Object>> result = maps.stream().sorted((x, y) -> {
+                if (sort != 0) {
+                    return ((int) x.get("cj") >= (int) y.get("cj")) ? 1 : -1;
+                }else {
+                    return ((int) x.get("cj") >= (int) y.get("cj")) ? -1 : 1;
+                }
+            }).collect(Collectors.toList());
+
+            for (int i = 0; i <result.size() ; i++) {
+                System.out.println(result.get(i).get("name")+" "+result.get(i).get("cj"));
+            }
+
+        }
+    }
+
+
+    /**
+      8
+      1 2 3 4 5 6 7 8
+
+      4
+     */
     public void test10(){
+        Scanner scanner = new Scanner(System.in);
+        while (scanner.hasNext()){
+
+            int length = scanner.nextInt();
+            scanner.nextLine();
+            String s = scanner.nextLine();
+
+            String[] split = s.split(" ");
+            Stack<Integer> stack = new Stack<>();
+            for (int i = 0; i <split.length ; i++) {
+                stack.push(new Integer(split[i]));
+            }
+
+            int index = scanner.nextInt();
+
+            if(index == 0){
+                System.out.println(0);
+            }else {
+                for (int i = 0; i < index-1; i++) {
+                    stack.pop();
+                }
+                System.out.println(stack.pop());
+            }
+        }
 
     }
+
+
+
+    /**
+     * 判断短字符串中的所有字符是否在长字符串中全部出现
+     *
+     * 输入两个字符串。第一个为短字符，第二个为长字符。
+     *
+     * bc
+     * abc
+     *
+     * true
+     */
     public void test09(){
+        Scanner scanner = new Scanner(System.in);
+        while (scanner.hasNext()){
+            String shortStr = scanner.nextLine();
+            String longStr = scanner.nextLine();
+            char[] sch = shortStr.toCharArray();
+            char[] lch = longStr.toCharArray();
 
+            boolean findFlag1 = true;
+
+            for (int i = 0; i < sch.length; i++) {
+                boolean findFlag = false;
+                for (int j = 0; j < lch.length; j++) {
+                    if(lch[j] == sch[i]){
+                        findFlag = true;
+                        break;
+                    }
+                }
+                if(findFlag == false){
+                    findFlag1 = false;
+                    System.out.println(false);
+                    break;
+                }
+            }
+            if(findFlag1 == true){
+                System.out.println(true);
+            }
+        }
     }
-    public void test08(){
 
+
+    /**
+     * 计算两个字符串的最大公共字串的长度，字符不区分大小写
+     */
+    public void test08(){
+        Scanner scanner = new Scanner(System.in);
+        while (scanner.hasNext()){
+            String str1 = scanner.nextLine();
+            String str2 = scanner.nextLine();
+            str1 = str1.toLowerCase();
+            str2 = str2.toLowerCase();
+
+            List<String> list = new ArrayList<>();
+            for (int i = 0; i < str1.length()-1 ; i++) {
+                for (int j = i+1; j < str1.length()+1; j++) {
+                    String sub = str1.substring(i, j);
+                    if(str2.contains(sub)){
+                        list.add(sub);
+                    }
+                }
+            }
+
+            int max = 0;
+            for (int i = 0; i < list.size(); i++) {
+                int len = list.get(i).length();
+                if(len > max){
+                    max = len;
+                }
+            }
+            System.out.println(max);
+        }
     }
 
     /**
@@ -54,7 +216,7 @@ public class Store {
             System.out.print(" ");
 
  /*       Integer sum = pNum.stream().reduce(Integer::sum).get();
-        System.out.printf("%.1f\n",(sum / pNum.size()));*/
+          System.out.printf("%.1f\n",(sum / pNum.size()));*/
 
             double avg = pNum.stream().mapToInt(m -> m).average().getAsDouble();
             System.out.printf("%.1f\n",avg);
