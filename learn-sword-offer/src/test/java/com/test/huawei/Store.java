@@ -9,10 +9,270 @@ import java.util.stream.Collectors;
 
 /**
  * @author xu.rb
- * @description: TODO
  * @since 2020-06-11 10:37
  */
 public class Store {
+
+
+    /**
+     *
+     * 题目三：
+     *
+     * 先输入一个行数
+     * 比如说是2
+     * 再输入两个字符串(用逗号隔开)
+     * 4,5,4
+     * 5,4,5
+     * 这就形成一个二维数组
+     * [4 5 4]
+     * [5 4 5]
+     * 然后输入操作的步骤数目
+     * 比如说是2，每一次输入标志了上面二维数组里面的两个数字
+     * 0,0,0,2  代表了第1行第一列的4   和第一行第三列的4  (如果这两个数字能用三根短线连起来，并且相等，那么就把这两个位置上的数字变成0)
+     * 1,0,0,1  同上
+     *
+     * 如果输入的多组操作，都能正常完成数字的消除，就返回0k
+     * 如果有一组操作存在错误，就返回这个操作的下标。分析错误的原因：（操作里面指明的位置在二维数组里面没有,下标越界，两个下标的值不相等，或者就是不能用三个短线把这两个数连起来）
+     *
+     */
+    public void test17(){
+        Scanner scanner = new Scanner(System.in);
+
+        //行数
+        Integer lines = new Integer(scanner.nextLine());
+        String[] split = scanner.nextLine().split(",");
+        Integer lie = split.length;
+        int[] arr0 = new int[lie];
+        for (int i = 0; i < split.length; i++) {
+            arr0[i] = new Integer(split[i]);
+        }
+        int[][] arr = new int[lines][lie];
+        arr[0] = arr0;
+
+        for (int i = 0; i < lines-1; i++) {
+            String[] sp = scanner.nextLine().split(",");
+            int[] arri = new int[lie];
+            for (int j = 0; j < sp.length; j++) {
+                arri[j] = new Integer(sp[j]);
+            }
+            arr[i+1] = arri;
+        }
+
+        Integer stepNum = new Integer(scanner.nextLine());
+        int[][] steps = new int[stepNum][4];
+        for (int i = 0; i < stepNum; i++) {
+            String[] sp = scanner.nextLine().split(",");
+            int[] arri = new int[4];
+            for (int j = 0; j < sp.length; j++) {
+                arri[j] = new Integer(sp[j]);
+            }
+            steps[i] = arri;
+        }
+
+        //如果是同行，只校验相等和跨界
+
+        boolean flag = false;
+        for (int i = 0; i <steps.length ; i++) {
+            int numALine = steps[i][0];
+            int numBLine = steps[i][2];
+            int numAClu = steps[i][1];
+            int numBClu = steps[i][3];
+
+            //行越界
+            if(numALine >= arr.length || numALine < 0 || numBLine >=arr.length || numBLine < 0){
+                System.out.println(i);
+                break;
+            }
+
+            //列越界
+            if(numAClu >= arr[1].length || numBClu < 0 || numAClu >= arr[1].length || numBClu < 0){
+                System.out.println(i);
+                break;
+            }
+
+            int numA = arr[numALine] [numAClu];
+            int numB = arr[numBLine] [numBClu];
+            //值不等
+            if(numA != numB){
+                System.out.println(i);
+                break;
+            }
+            //校验完毕
+
+
+            //如果同行或者同列 指定是ok的  消除
+            if(numALine == numBLine){
+                arr[numALine] [numAClu] = 0;
+                arr[numBLine] [numBClu] = 0;
+                continue;
+            }
+
+            if(numAClu == numBClu){
+                arr[numALine] [numAClu] = 0;
+                arr[numBLine] [numBClu] = 0;
+                continue;
+            }
+
+            //不同行不同列
+            //A和B  左边到右边之间应该有0存在
+            int start = numAClu;
+            int end = numBClu;
+            if(numAClu > numBClu){
+                numBClu = start;
+                numAClu = end;
+            }
+            if(check(numALine,numAClu,arr) == 1 || check(numBLine,numBClu,arr) == 1){
+                System.out.println(i);
+                break;
+            }
+
+            flag = true;
+        }
+        if(flag == true){
+            System.out.println("ok");
+        }
+    }
+    public static int check(int line,int clu,int arr[][]){
+
+        //上
+        if(line-1 >= 0){
+            if(arr[line+1][clu] == 0)
+                return 0;
+        }
+        //下
+        if(line+1 < arr.length){
+            if(arr[line+1][clu] == 0)
+                return 0;
+        }
+
+        //左
+        if(clu-1 >= 0){
+            if(arr[line][clu] == 0)
+                return 0;
+        }
+
+        //左
+        if(clu+1 < arr.length){
+            if(arr[line][clu] == 0)
+                return 0;
+        }
+        return 1;
+    }
+
+
+    /**
+     * 输入一个字符串 和一个标志
+     * 例子：  aA1bB2cC3 1
+     * 假如这个标志是 1  就把字符串中小写字母反转输出  cA1bB2aC3
+     * 假如这个标志是 2  就把字符串中大写写字母反转输出  aC1bB2cA3
+     * 假如这个标志是 3  就把字符串中数字的位置反转输出  aA3bB2aC1
+     */
+    public void test16(){
+        Scanner scanner = new Scanner(System.in);
+        while (scanner.hasNext()){
+            String s = scanner.nextLine();
+
+            String[] split = s.split(" ");
+            String  str = new String(split[0]);
+            Integer flag = new Integer(split[1]);
+
+            List<Integer> list = new ArrayList<>();
+            char[] res = str.toCharArray();
+
+
+            //1 小写
+            if(flag == 1){
+                String a1 = Pattern.compile("[a-z]").matcher(str).replaceAll("a");
+                char[] cha1 = a1.toCharArray();
+                for (int i = 0; i < cha1.length; i++) {
+                    if(cha1[i] == 'a'){
+                        list.add(i);
+                    }
+                }
+            }
+            //2 大写
+            if(flag == 2){
+                String a1 = Pattern.compile("[A-Z]").matcher(str).replaceAll("A");
+                char[] cha1 = a1.toCharArray();
+                for (int i = 0; i < cha1.length; i++) {
+                    if(cha1[i] == 'A'){
+                        list.add(i);
+                    }
+                }
+            }
+            //3 数字
+            if(flag == 3){
+                String a1 = Pattern.compile("[0-9]").matcher(str).replaceAll("1");
+                char[] cha1 = a1.toCharArray();
+                for (int i = 0; i < cha1.length; i++) {
+                    if(cha1[i] == '1'){
+                        list.add(i);
+                    }
+                }
+            }
+            char temp = '#';
+            int size = list.size();
+            for (int i = 0; i < size/2 ; i++) {
+                temp = res[list.get(i)];
+                res[list.get(i)] = res[list.get(size-1-i)];
+                res[list.get(size-1-i)] = temp;
+            }
+            System.out.println(new String(res));
+        }
+    }
+
+
+
+
+    /**
+     * 1、输入小明的身高和他们班其他小朋友的个数
+     * 比如 100 5
+     * 2、输入这5个小朋友的身高 中间用空格隔开（身高的范围是0-200）
+     * 98 99 100 101 102
+     *
+     * 输出：
+     * 按照跟小明的身高差去排序，身高差相同，个子小的排在前面
+     * 100 99 101 98 102
+     */
+    public void test15(){
+        Scanner scanner = new Scanner(System.in);
+        while (scanner.hasNext()){
+
+            String[] split1 = scanner.nextLine().split(" ");
+            //小明的身高
+            Integer height = new Integer(split1[0]);
+            //小朋友的个数
+            Integer num = new Integer(split1[1]);
+            String str = scanner.nextLine();
+            //各个小朋友的身高
+            String[] split = str.split(" ");
+
+            List<Integer> list = new ArrayList<>();
+            for (int i = 0; i <split.length ; i++) {
+                list.add(height - new Integer(split[i]));
+            }
+
+            List<Integer> res = new ArrayList<>();
+            for (int i = 0; i <= 200; i++) {
+                for (int j = 0; j < list.size(); j++) {
+                    if(list.get(j) == i){
+                        res.add(new Integer(split[j]));
+                    }
+                }
+
+                for (int j = 0; j < list.size(); j++) {
+                    if(i != 0 && list.get(j) == -i){
+                        res.add(new Integer(split[j]));
+                    }
+                }
+            }
+            for (int i = 0; i < res.size() ; i++) {
+                System.out.print(res.get(i) + " ");
+            }
+        }
+    }
+
+
 
 
 
