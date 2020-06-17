@@ -13,6 +13,26 @@ import java.util.stream.Collectors;
  */
 public class Store {
 
+
+    @Test
+    public void test18(){
+        int[] arr = {4,5,8,7,2,1};  //数组
+        int sum  = 12;              //找数组中和是12
+
+        Map<Integer, Integer> map = new HashMap<>();
+
+        for (int i = 0; i < arr.length; i++) {
+            int c = sum - arr[i];
+            if (map.containsKey(c)) {
+                int[] res =  {map.get(c), i};
+                System.out.println(Arrays.toString(res));
+                //break;
+            }
+            map.put(arr[i], i);
+        }
+        System.out.println(map.toString());
+    }
+
     /**
      *
      * 题目三：
