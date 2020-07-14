@@ -228,3 +228,34 @@ this.registeredSingletons.add(beanName);
 刚开始创建A对象，A对象创建完毕就会放到三级缓存中。在设置属性依赖的时候，发现需要B对象，这时候它首先尝试从IOC容器中获取这个对象，获取不到再去尝试从三级缓存中获取
 三级缓存中也没有才会去创建B对象，B对象创建完成之后他会把B放到三级缓存中。B需要A作为属性依赖，IOC容器中此时还没有A对象，但是三级缓存中已经有了。就能解决B的属性依赖是A。
 到这里，B对象创建完毕，放到了IOC容器中，也就是A的属性设置完毕，也会把A放到IOC容器中。
+
+
+## Spring AOP
+AOP要实现的是一种对原油代码的一种增强，也就是运用拦截处理在方法执行的周期范围之内。
+Spring的AOP是使用动态代理来实现的，如果没有使用接口，使用的是一种Cglib的代理，使用了接口则是用JDK的动态代理。
+Spring的AOP需要借助于IOC来管理，并且之内作用于IOC中的Bean。
+Spring的AOP会在容器启动的时候去生成代理实例，方法调用上会增加栈的深度，性能不如AspectJ那么好。
+
+AspectJ是AOP编程的完整解决方案，Spring的AOP只是解决最普遍的在开发中方法织入的需求。
+
+**Spring1.0**  
+代理实现：
+一个接口，一个实现。然后定义代理类，包装实现类，添加自定义逻辑，使用的时候用代理类来生成实例。
+自定义的逻辑可言实现MethodBeforeAdvice类来形成一个Advice。
+在配置文件里面指定Advice,然后Advisor来决定拦截那些方法，拦截后需要完成的工作还是要让Advice来做。
+
+对于全局的拦截可言使用BeanNameAutoProxyCreator来做。更方便的是DefaultAdvisorAutoProxyCreator
+
+**Spring2.0 @AspectJ配置**
+@Aspect注解标注在bean上面，在里面的方法体上配置@Ponitcut注解使用表达式去指定匹配方法签名。
+配置Pointcut就是配置需要拦截那些方法，对被拦截的方法做什么需要去配置Advice，也就是使用@Before、@AfterReturning等通知注解
+
+
+## Spring AOP源码
+Spring AOP会在IOC容器创建Bean实例的最后对bean进行处理，也就是在这个地方对bean进行的增强。
+在postProcessorAfterInitialization方法里面去调用了wrapIfNecessary()方法去创建了代理对象createProxy();
+这个方法就是在创建代理
+
+
+
+
