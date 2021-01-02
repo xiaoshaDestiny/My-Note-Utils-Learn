@@ -19,6 +19,7 @@
         <module>learn-spring-debug</module>
         <module>learn-netty</module>
         <module>learn-sword-offer</module>
+        <module>actual</module>
     </modules>
 
     <build>
