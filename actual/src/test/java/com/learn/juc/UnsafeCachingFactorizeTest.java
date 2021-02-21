@@ -79,7 +79,7 @@ public class UnsafeCachingFactorizeTest {
 
         Thread.sleep(2000);
         List<Boolean> status = trueThreads.stream().distinct().collect(Collectors.toList());
-        List<Boolean> trueCollection = trueThreads.stream().filter(x-> x).collect(Collectors.toList());
+        List<Boolean> trueCollection = trueThreads.stream().filter(x -> Objects.nonNull(x) && x).collect(Collectors.toList());
 
         log.info("线程数量：{}",trueThreads.size());
         log.info("期望是1：{}",status.size());
@@ -107,13 +107,18 @@ public class UnsafeCachingFactorizeTest {
 
         Thread.sleep(2000);
         List<Boolean> status = trueThreads.stream().distinct().collect(Collectors.toList());
-        List<Boolean> trueCollection = trueThreads.stream().filter(x-> x).collect(Collectors.toList());
+        List<Boolean> trueCollection = trueThreads.stream().filter(x -> Objects.nonNull(x) && x).collect(Collectors.toList());
 
         log.info("线程数量：{}",trueThreads.size());
         log.info("期望是1：{}",status.size());
         log.info("期望是true：{}",trueCollection.size() == trueThreads.size());
     }
 
+    /**
+     * 书上说此案例是线程安全的
+     *
+     * 应该将执行时间较长，并且不影响共享状态的代码从同步代码块中分离出去
+     */
     @Test
     public void testServiceSafe() throws InterruptedException {
         UnsafeCachingFactorize service = new UnsafeCachingFactorize();
@@ -130,9 +135,9 @@ public class UnsafeCachingFactorizeTest {
             thread.start();
         }
 
-        Thread.sleep(2000);
+        Thread.sleep(3000);
         List<Boolean> status = trueThreads.stream().distinct().collect(Collectors.toList());
-        List<Boolean> trueCollection = trueThreads.stream().filter(x-> x).collect(Collectors.toList());
+        List<Boolean> trueCollection = trueThreads.stream().filter(x -> Objects.nonNull(x) && x).collect(Collectors.toList());
 
         log.info("线程数量：{}",trueThreads.size());
         log.info("期望是1：{}",status.size());
