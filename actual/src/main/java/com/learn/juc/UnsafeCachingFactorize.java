@@ -1,5 +1,7 @@
 package com.learn.juc;
 
+import com.learn.juc.part3.CatchValue;
+
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -110,4 +112,22 @@ public class UnsafeCachingFactorize {
         }
         return result;
     }
+
+
+
+    private volatile CatchValue catchValue = new CatchValue(null,null);
+    public String catchValueService(Integer key) {
+        String value = catchValue.getValue(key);
+        if (value == null) {
+            if (key == 1){
+                value = "v1";
+            }
+            if (key == 2){
+                value = "v2";
+            }
+            catchValue = new CatchValue(key,value);
+        }
+        return value;
+    }
+
 }

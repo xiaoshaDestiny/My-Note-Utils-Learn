@@ -144,4 +144,31 @@ public class UnsafeCachingFactorizeTest {
         log.info("期望是true：{}",trueCollection.size() == trueThreads.size());
 
     }
+
+    @Test
+    public void testCatchValueService() throws InterruptedException {
+        UnsafeCachingFactorize service = new UnsafeCachingFactorize();
+
+        List<Boolean> trueThreads = Lists.newArrayList();
+        for (int i = 0; i < 500; i++) {
+            Thread thread = new Thread(() -> {
+                //随机取数字1-2
+                int paramX = (int) (1 + Math.random() * (2 - 1 + 1));
+                String value = service.catchValueService(paramX);
+                trueThreads.add(value.substring(1,2).equals(String.valueOf(paramX)));
+                log.info("{},{}",paramX,value);
+            });
+            thread.start();
+        }
+
+        Thread.sleep(3000);
+        List<Boolean> status = trueThreads.stream().distinct().collect(Collectors.toList());
+        List<Boolean> trueCollection = trueThreads.stream().filter(x -> Objects.nonNull(x) && x).collect(Collectors.toList());
+
+        log.info("线程数量：{}",trueThreads.size());
+        log.info("期望是1：{}",status.size());
+        log.info("期望是true：{}",trueCollection.size() == trueThreads.size());
+
+    }
+
 }
