@@ -20,6 +20,7 @@
         <module>learn-netty</module>
         <module>learn-sword-offer</module>
         <module>actual</module>
+        <module>learn-springboot</module>
     </modules>
 
     <build>
