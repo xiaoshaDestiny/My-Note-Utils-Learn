@@ -22,14 +22,12 @@ import java.util.Arrays;
  * @since 2021-05-15 01:18
  */
 @Aspect
-@EnableAspectJAutoProxy
 @Component
 public class SimpleAspect {
 
     @Pointcut("@annotation(com.learn.boot.config.VipCheck)")
     public void vipCheckMethodPointcut() {}
 
-    @Async
     @Around("vipCheckMethodPointcut()")
     public String beforeCall(ProceedingJoinPoint  joinPoint) throws Throwable {
         Object arg = joinPoint.getArgs()[0];
