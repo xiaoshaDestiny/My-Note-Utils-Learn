@@ -36,7 +36,7 @@ public class ParamCheckAop {
         String ownerNme = AnnotationExpressionResolve.getExpressionResult(paramCheck.ownerName(), method, joinPoint.getArgs());
 
         if ("black".equalsIgnoreCase(color)) {
-            return String.format("call 110, owner is %s",ownerNme);
+            return String.format("发现黑色盒子, owner is %s",ownerNme);
         } else {
             return joinPoint.proceed().toString();
         }
